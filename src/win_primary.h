@@ -1,5 +1,5 @@
 /*
- * main.c
+ * win_primary.h
  *
  * wacom-plus - A simple QOTD daemon.
  * Copyright (c) 2015-2016 Ammon Smith
@@ -19,20 +19,14 @@
  *
  */
 
+#ifndef _WIN_PRIMARY_H_
+#define _WIN_PRIMARY_H_
+
 #include <gtk/gtk.h>
 
-#include "core.h"
-#include "win_primary.h"
+void win__primary_activate(GtkApplication *app, gpointer arg);
 
-int main(int argc, char *argv[])
-{
-	GtkApplication *app;
-	int ret;
+#define win_primary_activate	(G_CALLBACK(win__primary_activate))
 
-	app = gtk_application_new("org.ammongit.wacomplus",
-				   G_APPLICATION_FLAGS_NONE);
-	g_signal_connect(app, "activate", win_primary_activate, NULL);
-	ret = g_application_run(G_APPLICATION(app), argc, argv);
-	g_object_unref(app);
-	return ret;
-}
+#endif /* _WIN_PRIMARY_H_ */
+
