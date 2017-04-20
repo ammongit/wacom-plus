@@ -1,0 +1,13 @@
+# Artifacts
+*.[oad]
+*.so
+src/wacom-plus
+
+# Project settings
+.ycm_extra_conf.py*
+
+# Misc
+.*.swp
+*.bak
+*~
+
