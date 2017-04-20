@@ -21,15 +21,17 @@
 
 #include <gtk/gtk.h>
 
+#include "core.h"
+
 static void activate(GtkApplication *app, gpointer arg)
 {
-	GtkWindow *win;
+	GtkWidget *win;
 
 	UNUSED(arg);
 
 	win = gtk_application_window_new(app);
 	gtk_window_set_title(GTK_WINDOW(win), "Wacom Plus");
-	gtk_window_set_default_size(GTK_WINDOW(win), 500, 800);
+	gtk_window_set_default_size(GTK_WINDOW(win), 600, 700);
 	gtk_widget_show_all(win);
 }
 

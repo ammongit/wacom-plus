@@ -41,22 +41,19 @@ DEPENDS   := $(SOURCES:.c=.d)
 EXE       := wacom-plus
 
 CC_FLAGS  := \
+	$(shell pkg-config --cflags gtk+-3.0 | sed 's/-I/-isystem /g') \
 	-ansi \
 	-pedantic \
 	-I. \
-	-isystem /usr/include/gtk-3.0 \
+	-D_XOPEN_SOURCE=500 \
+	-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_0 \
 	-Wall \
 	-Wextra \
 	-Wmissing-prototypes \
 	-Wcast-qual
 
 LD_FLAGS  := \
-	-lgtk \
-	-lgdk \
-	-lglib \
-	-lX11 \
-	-lXext \
-	-lm
+	$(shell pkg-config --libs gtk+-3.0)
 
 all: CFLAGS += -pipe -O2
 all: $(EXE)

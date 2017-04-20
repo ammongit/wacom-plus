@@ -3,10 +3,14 @@ An Wacom tablet configuration GUI for Linux. There are a few already in existenc
 
 ### Requirements
 * GNU Make
-* ANSI C compiler
+* ANSI C Compiler
+* `pkg-config`
 * GTK 3.0
 * `xf86-input-wacom`
 * `libwacom`
+
+### Compilation
+Invoke `make release` in `src/`. The final binary will be located at `src/wacom-plus`.
 
 Available under the GPL, version two or later.
 

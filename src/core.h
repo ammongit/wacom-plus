@@ -71,9 +71,6 @@
 #define DEFAULT(x,alt)				((x) ? (x) : (alt))
 #define STATIC_ASSERT(x)			((void)sizeof(char[2 * (!!(x)) - 1]))
 #define ARRAY_SIZE(x)				(sizeof(x) / (sizeof((x)[0])))
-#define MIN(x,y)				(((x) < (y)) ? (x) : (y))
-#define MAX(x,y)				(((x) > (y)) ? (x) : (y))
-#define BOUND(x,a,b)				(((a) >= (x)) ? (a) : (((x) >= (b)) ? (b) : (x)))
 
 /* GNU Extensions */
 
