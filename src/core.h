@@ -22,6 +22,8 @@
 #ifndef _CORE_H_
 #define _CORE_H_
 
+#include <stddef.h>
+
 /* Definitions */
 
 #define PROGRAM_NAME				"wacom-plus"
@@ -83,6 +85,11 @@
 # define likely(x)				(x)
 # define unlikely(x)				(x)
 #endif /* __GNUC__ */
+
+/* External functions */
+
+void *xmalloc(size_t size);
+#define xfree(x)	free(x)
 
 #endif /* _CORE_H_ */
 

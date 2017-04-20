@@ -3,6 +3,10 @@
 *.so
 src/wacom-plus
 
+# Debugging
+core.[0-9]*
+vgcore.[0-9]*
+
 # Project settings
 .ycm_extra_conf.py*
 
