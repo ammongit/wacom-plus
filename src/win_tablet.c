@@ -1,5 +1,5 @@
 /*
- * win_primary.h
+ * win_tablet.c
  *
  * wacom-plus - A simple QOTD daemon.
  * Copyright (c) 2015-2016 Ammon Smith
@@ -19,22 +19,8 @@
  *
  */
 
-#ifndef _WIN_PRIMARY_H_
-#define _WIN_PRIMARY_H_
+#include "win_tablet.h"
 
-#include "win_core.h"
-
-void win__primary_activate(GtkApplication *app, gpointer arg);
-void win__primary_refresh(GtkApplication *app, gpointer arg);
-void win__primary_configure(GtkApplication *app, gpointer arg);
-void win__primary_about(GtkApplication *app, gpointer arg);
-void win__primary_close(GtkApplication *app, gpointer arg);
-
-#define win_primary_activate	_CBF(primary, activate)
-#define win_primary_refresh	_CBF(primary, refresh)
-#define win_primary_configure	_CBF(primary, configure)
-#define win_primary_about	_CBF(primary, about)
-#define win_primary_close	_CBF(primary, close)
-
-#endif /* _WIN_PRIMARY_H_ */
-
+void win__tablet_activate(GtkApplication *app, gpointer arg)
+{
+}
