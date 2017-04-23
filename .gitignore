@@ -1,7 +1,6 @@
 # Artifacts
-*.[oad]
-*.so
-src/wacom-plus
+build/
+src/config.h
 
 # Debugging
 core.[0-9]*

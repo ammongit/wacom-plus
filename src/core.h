@@ -24,16 +24,9 @@
 
 #include <stddef.h>
 
+#include "config.h"
+
 /* Definitions */
-
-#define PROGRAM_NAME				"wacom-plus"
-#define PROGRAM_VERSION_MAJOR			0
-#define PROGRAM_VERSION_MINOR			0
-#define PROGRAM_VERSION_PATCH			1
-
-#ifndef GIT_HASH
-# define GIT_HASH				"nogithash"
-#endif /* GIT_HASH */
 
 #if defined(__clang__)
 # define COMPILER_NAME				"Clang/LLVM"
