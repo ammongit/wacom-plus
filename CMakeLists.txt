@@ -29,14 +29,6 @@ add_subdirectory(src)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-# Set compile flags
-set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} -ansi -pedantic")
-set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} -Wall -Wshadow -Wextra -Wmissing-prototypes -Wcast-qual")
-set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} -pipe -O2")
-set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} -D_XOPEN_SOURCE=500 -DGDK_VERSION_MIN_REQUIRE=GTK_VERSION_3_0")
-
-set(${CMAKE_C_FLAGS_RELEASE} "${CMAKE_C_FLAGS_RELEASE} -fstack-protector-strong -Werror")
-
 # Check header files
 include(CheckIncludes)
 

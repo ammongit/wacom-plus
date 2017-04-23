@@ -28,7 +28,7 @@ string(SUBSTRING ${GIT_SHA1} 0 7 GIT_HASH)
 add_definitions("-DGIT_HASH=\"${GIT_HASH}\"")
 
 # Add sources
-include_directories(SYSTEM "${PROJECT_SOURCE_DIR}/src")
+include_directories("${PROJECT_SOURCE_DIR}/src")
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SOURCES)
 
 # pkg-config checks
@@ -36,7 +36,16 @@ include(FindPkgConfig)
 pkg_check_modules(GTK REQUIRED gtk+-3.0)
 pkg_check_modules(LIBWACOM REQUIRED libwacom)
 
-add_definitions(${GTK_CFLAGS} ${LIBWACOM_CFLAGS})
+set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} ${GTK_CFLAGS} ${LIBWACOM_CFLAGS}")
+
+# Set compile flags
+set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} -ansi -pedantic")
+set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} -Wall -Wshadow -Wextra -Wmissing-prototypes -Wcast-qual")
+set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} -pipe -O2")
+set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} -D_XOPEN_SOURCE=500 -DGDK_VERSION_MIN_REQUIRE=GTK_VERSION_3_0")
+
+set(${CMAKE_C_FLAGS_RELEASE} "${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS}")
+set(${CMAKE_C_FLAGS_RELEASE} "${CMAKE_C_FLAGS_RELEASE} -fstack-protector-strong -Werror")
 
 # Main executable
 add_executable(${PROJECT_NAME} ${SOURCES})
