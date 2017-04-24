@@ -1,7 +1,7 @@
 /*
  * core.h
  *
- * wacom-plus - A simple QOTD daemon.
+ * wacom-plus - Linux GUI configuration for Wacom tablets
  * Copyright (c) 2015-2016 Ammon Smith
  *
  * wacom-plus is free software: you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 #define PROGRAM_NAME				"wacom-plus"
 #define PROGRAM_VERSION_MAJOR			0
 #define PROGRAM_VERSION_MINOR			0
-#define PROGRAM_VERSION_PATCH			1
+#define PROGRAM_VERSION_PATCH			2
 
 #ifndef GIT_HASH
 # define GIT_HASH				"nogithash"

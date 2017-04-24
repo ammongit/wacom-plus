@@ -1,7 +1,7 @@
 /*
  * main.c
  *
- * wacom-plus - A simple QOTD daemon.
+ * wacom-plus - Linux GUI configuration for Wacom tablets
  * Copyright (c) 2015-2016 Ammon Smith
  *
  * wacom-plus is free software: you can redistribute it and/or modify

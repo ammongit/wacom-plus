@@ -1,6 +1,5 @@
 # Artifacts
-*.[oad]
-*.so
+src/*.o
 src/wacom-plus
 
 # Debugging
