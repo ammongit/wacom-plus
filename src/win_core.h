@@ -28,5 +28,7 @@
 
 #define _CBF(x, y)	(G_CALLBACK(win__ ## x ## _ ## y))
 
+void win_quit(gpointer app);
+
 #endif /* _WIN_CORE_H_ */
 

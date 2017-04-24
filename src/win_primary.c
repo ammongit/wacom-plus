@@ -25,9 +25,8 @@
 
 void win__primary_activate(GtkApplication *app, gpointer arg)
 {
-	GtkWidget *win, *row1, *row2, *col;
+	GtkWidget *win, *grid;
 	GtkWidget *listbox, *ref_btn, *conf_btn;
-	GtkWidget *abt_btn, *close_btn;
 
 	UNUSED(arg);
 
@@ -48,35 +47,33 @@ void win__primary_activate(GtkApplication *app, gpointer arg)
 	conf_btn = gtk_button_new_with_label("Configure");
 	g_signal_connect(conf_btn, "clicked", win_primary_configure, NULL);
 
-	/* About button */
-	abt_btn = gtk_button_new_from_stock(GTK_STOCK_ABOUT);
-	g_signal_connect(abt_btn, "clicked", win_primary_about, NULL);
-
-	/* Close button */
-	close_btn = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-	g_signal_connect(close_btn, "clicked", win_primary_close, app);
-
-	/* Listbox buttons */
-	row1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-	gtk_container_add(GTK_CONTAINER(row1), ref_btn);
-	gtk_container_add(GTK_CONTAINER(row1), conf_btn);
-	gtk_widget_set_halign(row1, GTK_ALIGN_CENTER);
-
-	/* Window buttons */
-	row2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-	gtk_container_add(GTK_CONTAINER(row2), abt_btn);
-	gtk_container_add(GTK_CONTAINER(row2), close_btn);
-	gtk_widget_set_halign(row2, GTK_ALIGN_END);
-
-	/* Primary column */
-	col = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-	gtk_container_add(GTK_CONTAINER(col), listbox);
-	gtk_container_add(GTK_CONTAINER(col), row1);
-	gtk_container_add(GTK_CONTAINER(col), row2);
-	gtk_widget_set_halign(col, GTK_ALIGN_CENTER);
+	/* Grid placement */
+	grid = gtk_grid_new();
+	gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+	gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
+	gtk_grid_set_row_homogeneous(GTK_GRID(grid), FALSE);
+	gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
+	gtk_grid_attach(GTK_GRID(grid),
+			listbox,
+			/* col */ 0,
+			/* row */ 0,
+			/* width */ 8,
+			/* height */ 12);
+	gtk_grid_attach(GTK_GRID(grid),
+			ref_btn,
+			/* col */ 0,
+			/* row */ 12,
+			/* width */ 4,
+			/* height */ 2);
+	gtk_grid_attach(GTK_GRID(grid),
+			conf_btn,
+			/* col */ 4,
+			/* row */ 12,
+			/* width */ 4,
+			/* height */ 2);
 
 	/* Finish */
-	gtk_container_add(GTK_CONTAINER(win), col);
+	gtk_container_add(GTK_CONTAINER(win), grid);
 	gtk_widget_show_all(win);
 }
 
