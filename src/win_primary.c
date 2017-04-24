@@ -49,6 +49,7 @@ void win__primary_activate(GtkApplication *app, gpointer arg)
 
 	/* Grid placement */
 	grid = gtk_grid_new();
+	gtk_container_set_border_width(GTK_CONTAINER(grid), 5);
 	gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
 	gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
 	gtk_grid_set_row_homogeneous(GTK_GRID(grid), FALSE);
