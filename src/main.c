@@ -27,12 +27,9 @@
 int main(int argc, char *argv[])
 {
 	GtkApplication *app;
-	int ret;
 
 	app = gtk_application_new("org.ammongit.wacomplus",
 				   G_APPLICATION_FLAGS_NONE);
 	g_signal_connect(app, "activate", win_primary_activate, NULL);
-	ret = g_application_run(G_APPLICATION(app), argc, argv);
-	g_object_unref(app);
-	return ret;
+	return g_application_run(G_APPLICATION(app), argc, argv);
 }

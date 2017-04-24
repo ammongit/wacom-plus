@@ -35,6 +35,7 @@ void win__primary_activate(GtkApplication *app, gpointer arg)
 	win = gtk_application_window_new(app);
 	gtk_window_set_title(GTK_WINDOW(win), "Wacom Plus");
 	gtk_window_set_default_size(GTK_WINDOW(win), 600, 700);
+	gtk_window_set_position(GTK_WINDOW(win), GTK_WIN_POS_CENTER);
 
 	/* Listbox */
 	listbox = gtk_list_box_new();
@@ -53,7 +54,7 @@ void win__primary_activate(GtkApplication *app, gpointer arg)
 
 	/* Close button */
 	close_btn = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-	g_signal_connect(close_btn, "clicked", win_primary_close, NULL);
+	g_signal_connect(close_btn, "clicked", win_primary_close, app);
 
 	/* Listbox buttons */
 	row1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
@@ -102,8 +103,15 @@ void win__primary_about(GtkApplication *app, gpointer arg)
 
 void win__primary_close(GtkApplication *app, gpointer arg)
 {
-	UNUSED(app);
-	UNUSED(arg);
+	GtkWidget *win;
+	GList *list;
 
-	exit(EXIT_SUCCESS);
+	UNUSED(app);
+
+	list = gtk_application_get_windows(arg);
+	while (list) {
+		win = list->data;
+		list = list->next;
+		gtk_widget_destroy(GTK_WIDGET(win));
+	}
 }
