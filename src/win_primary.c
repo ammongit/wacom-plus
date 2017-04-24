@@ -88,6 +88,7 @@ void win__primary_configure(GtkApplication *app, gpointer arg)
 {
 }
 
+#if 0
 void win__primary_about(GtkApplication *app, gpointer arg)
 {
 	GtkWidget *win;
@@ -100,18 +101,4 @@ void win__primary_about(GtkApplication *app, gpointer arg)
 	/* Finish */
 	gtk_widget_show_all(win);
 }
-
-void win__primary_close(GtkApplication *app, gpointer arg)
-{
-	GtkWidget *win;
-	GList *list;
-
-	UNUSED(app);
-
-	list = gtk_application_get_windows(arg);
-	while (list) {
-		win = list->data;
-		list = list->next;
-		gtk_widget_destroy(GTK_WIDGET(win));
-	}
-}
+#endif
