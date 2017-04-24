@@ -71,7 +71,7 @@ check_sources() {
 	fi
 
 	while read -r header; do
-		if [[ "$header" -nt "$src" ]]; then
+		if [[ "$header" -nt "$obj" ]]; then
 			return 1
 		fi
 	done < <(sed -rn 's|^#\s*include\s+"([^"]+)"|\1|p' "$src")
@@ -113,7 +113,7 @@ link() {
 	fi
 
 	# Link the final binary
-	invoke LD "${LD:-cc}" "$target" "${flags[@]}" "${ld_flags[@]}" -o "$target" "${objects[@]}"
+	invoke 'LD' "${LD:-cc}" "$target" "${flags[@]}" "${ld_flags[@]}" -o "$target" "${objects[@]}"
 }
 
 clean() {
@@ -141,6 +141,7 @@ for arg in "$@"; do
 			;;
 		clean)
 			clean
+			exit 0
 			;;
 		*)
 			echo >&2 "Unknown argument: $arg"
