@@ -23,17 +23,58 @@
 
 #include "win_primary.h"
 
+static void submenu_append(const char *label, GtkWidget *menu, GCallback cbf)
+{
+	GtkWidget *menu_item;
+
+	menu_item = gtk_menu_item_new_with_label(label);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+	gtk_widget_show(menu_item);
+}
+
+static void menu_append(const char *label, GtkWidget *menu, GtkWidget *menu_bar)
+{
+	GtkWidget *menu_item;
+
+	menu_item = gtk_menu_item_new_with_label(label);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
+	gtk_widget_show(menu_item);
+}
+
+static GtkWidget *make_menu(void)
+{
+	GtkWidget *menu, *menu_bar;
+
+	/* Menu Bar */
+	menu_bar = gtk_menu_bar_new();
+	gtk_widget_set_hexpand(menu_bar, TRUE);
+
+	/* File */
+	menu = gtk_menu_new();
+	submenu_append("New...", menu, NULL);
+	submenu_append("Open...", menu, NULL);
+	menu_append("File", menu, menu_bar);
+
+	return menu;
+}
+
 void win__primary_activate(GtkApplication *app, gpointer arg)
 {
 	GtkWidget *win, *grid;
 	GtkWidget *listbox, *ref_btn, *conf_btn;
+	GtkWidget *menu;
 
 	UNUSED(arg);
+
+	/* Menu */
+	menu = make_menu();
 
 	/* Window */
 	win = gtk_application_window_new(app);
 	gtk_window_set_title(GTK_WINDOW(win), "Wacom Plus");
-	gtk_window_set_default_size(GTK_WINDOW(win), 600, 700);
+	gtk_window_set_default_size(GTK_WINDOW(win), 700, 850);
 	gtk_window_set_position(GTK_WINDOW(win), GTK_WIN_POS_CENTER);
 
 	/* Listbox */
@@ -59,17 +100,17 @@ void win__primary_activate(GtkApplication *app, gpointer arg)
 			/* col */ 0,
 			/* row */ 0,
 			/* width */ 8,
-			/* height */ 12);
+			/* height */ 25);
 	gtk_grid_attach(GTK_GRID(grid),
 			ref_btn,
 			/* col */ 0,
-			/* row */ 12,
+			/* row */ 25,
 			/* width */ 4,
 			/* height */ 2);
 	gtk_grid_attach(GTK_GRID(grid),
 			conf_btn,
 			/* col */ 4,
-			/* row */ 12,
+			/* row */ 25,
 			/* width */ 4,
 			/* height */ 2);
 
