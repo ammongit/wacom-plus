@@ -8,6 +8,13 @@ target=wacom-plus
 force=false
 verbose=false
 
+# Dependencies
+packages=(
+	'gtk+-3.0'
+	'json-c'
+	'libwacom'
+)
+
 # Base flags
 flags=(
 	'-pipe'
@@ -24,11 +31,11 @@ cc_flags=(
 	'-Wcast-qual'
 	'-D_XOPEN_SOURCE=500'
 	'-DGDK_VERSION_MIN_REQUIRED=GDK_VERSION_3_0'
-	$(pkg-config --cflags 'gtk+-3.0' 'libwacom' | sed 's|-I|-isystem |g')
+	$(pkg-config --cflags "${packages[@]}" | sed 's|-I|-isystem |g')
 )
 
 ld_flags=(
-	$(pkg-config --libs 'gtk+-3.0' 'libwacom')
+	$(pkg-config --libs "${packages[@]}")
 )
 
 # Add env flags
@@ -62,7 +69,7 @@ check_sources() {
 	local src="$1"
 	local obj="$2"
 
-	if "$force" || [[ ! -f "$obj" ]]; then
+	if "$force" || [[ ! -f "$obj" ]] || [[ "$0" -nt "$obj" ]]; then
 		return 1
 	fi
 
@@ -78,7 +85,7 @@ check_sources() {
 }
 
 check_objects() {
-	if "$force" || [[ ! -f "$target" ]]; then
+	if "$force" || [[ ! -f "$target" ]] || [[ "$0" -nt "$target" ]]; then
 		return 1
 	fi
 
