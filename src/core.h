@@ -88,6 +88,9 @@
 
 /* External functions */
 
+void init(void);
+void cleanup(void);
+
 void *xmalloc(size_t size);
 #define xfree(x)	free(x)
 

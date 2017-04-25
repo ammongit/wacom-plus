@@ -28,6 +28,9 @@
 
 #define _GUI_CBF(x, y)		(G_CALLBACK(gui__ ## x ## _ ## y))
 
+int gui_init(void);
+void gui_cleanup(void);
+
 void gui_quit(gpointer app);
 
 #endif /* _GUI_CORE_H_ */

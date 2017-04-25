@@ -1,5 +1,5 @@
 /*
- * main.c
+ * tablet_core.c
  *
  * wacom-plus - Linux GUI configuration for Wacom tablets
  * Copyright (c) 2015-2016 Ammon Smith
@@ -19,18 +19,25 @@
  *
  */
 
-#include <gtk/gtk.h>
+#include "tablet_core.h"
 
-#include "core.h"
-#include "gui_primary.h"
+static WacomDeviceDatabase *db;
+static WacomError *err;
 
-int main(int argc, char *argv[])
+int tablet_init(void)
 {
-	GtkApplication *app;
-
-	init();
-	app = gtk_application_new("org.ammongit.wacomplus",
-				   G_APPLICATION_FLAGS_NONE);
-	g_signal_connect(app, "activate", gui_primary_activate, NULL);
-	return g_application_run(G_APPLICATION(app), argc, argv);
+	if ((db = libwacom_database_new()) == NULL)
+		return -1;
+	if ((err = libwacom_error_new()) == NULL)
+		return -1;
+	return 0;
 }
+
+void tablet_cleanup(void)
+{
+	libwacom_database_destroy(db);
+	libwacom_error_free(&err);
+}
+
+
+int tablet_refresh_list(void);

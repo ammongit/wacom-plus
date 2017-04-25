@@ -22,8 +22,45 @@
 #include <gtk/gtk.h>
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "core.h"
+#include "gui_core.h"
+#include "tablet_core.h"
+
+void init(void)
+{
+	size_t i;
+	struct {
+		int (*cbf)(void);
+	} init_funcs[] = {
+		{ gui_init },
+		{ tablet_init }
+	};
+
+	atexit(cleanup);
+
+	for (i = 0; i < ARRAY_SIZE(init_funcs); i++) {
+		if (init_funcs[i].cbf()) {
+			fputs("Initialization failed.\n", stderr);
+			exit(EXIT_FAILURE);
+		}
+	}
+}
+
+void cleanup(void)
+{
+	size_t i;
+	struct {
+		void (*cbf)(void);
+	} cleanup_funcs[] = {
+		{ gui_cleanup },
+		{ tablet_cleanup }
+	};
+
+	for (i = 0; i < ARRAY_SIZE(cleanup_funcs); i++)
+		cleanup_funcs[i].cbf();
+}
 
 void *xmalloc(size_t size)
 {

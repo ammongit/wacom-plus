@@ -21,6 +21,18 @@
 
 #include "gui_core.h"
 
+int gui_init(void)
+{
+	/* nothing to do */
+
+	return 0;
+}
+
+void gui_cleanup(void)
+{
+	/* nothing to do */
+}
+
 void gui_quit(gpointer app)
 {
 	GtkWidget *win;
