@@ -1,5 +1,5 @@
 /*
- * win_primary.c
+ * gui_primary.c
  *
  * wacom-plus - Linux GUI configuration for Wacom tablets
  * Copyright (c) 2015-2016 Ammon Smith
@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 
-#include "win_primary.h"
+#include "gui_primary.h"
 
 static void submenu_append(const char *label, GtkWidget *menu, GCallback cbf)
 {
@@ -60,7 +60,7 @@ static GtkWidget *make_menu(void)
 	return menu;
 }
 
-void win__primary_activate(GtkApplication *app, gpointer arg)
+void gui__primary_activate(GtkApplication *app, gpointer arg)
 {
 	GtkWidget *win, *grid;
 	GtkWidget *listbox, *ref_btn, *conf_btn;
@@ -82,11 +82,11 @@ void win__primary_activate(GtkApplication *app, gpointer arg)
 
 	/* Refresh button */
 	ref_btn = gtk_button_new_with_label("Refresh");
-	g_signal_connect(ref_btn, "clicked", win_primary_refresh, NULL);
+	g_signal_connect(ref_btn, "clicked", gui_primary_refresh, NULL);
 
 	/* Configure button */
 	conf_btn = gtk_button_new_with_label("Configure");
-	g_signal_connect(conf_btn, "clicked", win_primary_configure, NULL);
+	g_signal_connect(conf_btn, "clicked", gui_primary_configure, NULL);
 
 	/* Grid placement */
 	grid = gtk_grid_new();
@@ -119,16 +119,16 @@ void win__primary_activate(GtkApplication *app, gpointer arg)
 	gtk_widget_show_all(win);
 }
 
-void win__primary_refresh(GtkApplication *app, gpointer arg)
+void gui__primary_refresh(GtkApplication *app, gpointer arg)
 {
 }
 
-void win__primary_configure(GtkApplication *app, gpointer arg)
+void gui__primary_configure(GtkApplication *app, gpointer arg)
 {
 }
 
 #if 0
-void win__primary_about(GtkApplication *app, gpointer arg)
+void gui__primary_about(GtkApplication *app, gpointer arg)
 {
 	GtkWidget *win;
 

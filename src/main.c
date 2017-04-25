@@ -22,7 +22,7 @@
 #include <gtk/gtk.h>
 
 #include "core.h"
-#include "win_primary.h"
+#include "gui_primary.h"
 
 int main(int argc, char *argv[])
 {
@@ -30,6 +30,6 @@ int main(int argc, char *argv[])
 
 	app = gtk_application_new("org.ammongit.wacomplus",
 				   G_APPLICATION_FLAGS_NONE);
-	g_signal_connect(app, "activate", win_primary_activate, NULL);
+	g_signal_connect(app, "activate", gui_primary_activate, NULL);
 	return g_application_run(G_APPLICATION(app), argc, argv);
 }

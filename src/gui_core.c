@@ -1,5 +1,5 @@
 /*
- * win_core.h
+ * gui_core.c
  *
  * wacom-plus - Linux GUI configuration for Wacom tablets
  * Copyright (c) 2015-2016 Ammon Smith
@@ -19,16 +19,17 @@
  *
  */
 
-#ifndef _WIN_CORE_H_
-#define _WIN_CORE_H_
+#include "gui_core.h"
 
-#include <gtk/gtk.h>
+void gui_quit(gpointer app)
+{
+	GtkWidget *win;
+	GList *list;
 
-#include "core.h"
-
-#define _CBF(x, y)	(G_CALLBACK(win__ ## x ## _ ## y))
-
-void win_quit(gpointer app);
-
-#endif /* _WIN_CORE_H_ */
-
+	list = gtk_application_get_windows(app);
+	while (list) {
+		win = list->data;
+		list = list->next;
+		gtk_widget_destroy(GTK_WIDGET(win));
+	}
+}
