@@ -36,16 +36,16 @@ include(FindPkgConfig)
 pkg_check_modules(GTK REQUIRED gtk+-3.0)
 pkg_check_modules(LIBWACOM REQUIRED libwacom)
 
-set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} ${GTK_CFLAGS} ${LIBWACOM_CFLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GTK_CFLAGS} ${LIBWACOM_CFLAGS}")
 
 # Set compile flags
-set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} -ansi -pedantic")
-set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} -Wall -Wshadow -Wextra -Wmissing-prototypes -Wcast-qual")
-set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} -pipe -O2")
-set(${CMAKE_C_FLAGS} "${CMAKE_C_FLAGS} -D_XOPEN_SOURCE=500 -DGDK_VERSION_MIN_REQUIRE=GTK_VERSION_3_0")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ansi -pedantic")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wshadow -Wextra -Wmissing-prototypes -Wcast-qual")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pipe -O2")
+add_definitions("-D_XOPEN_SOURCE=500 -DGDK_VERSION_MIN_REQUIRED=GTK_VERSION_3_0")
 
-set(${CMAKE_C_FLAGS_RELEASE} "${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS}")
-set(${CMAKE_C_FLAGS_RELEASE} "${CMAKE_C_FLAGS_RELEASE} -fstack-protector-strong -Werror")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS}")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fstack-protector-strong -Werror")
 
 # Main executable
 add_executable(${PROJECT_NAME} ${SOURCES})

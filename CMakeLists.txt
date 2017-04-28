@@ -21,6 +21,9 @@
 cmake_minimum_required(VERSION 2.6)
 project(wacom-plus C)
 
+set(CMAKE_C_STANDARD 90)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
 set(PROJECT_VERSION_MAJOR 0)
 set(PROJECT_VERSION_MINOR 0)
 set(PROJECT_VERSION_PATCH 2)
