@@ -23,111 +23,104 @@
 
 #include "gui_primary.h"
 
-static void submenu_append(const char *label, GtkWidget *menu, GCallback cbf)
+/* Menus */
+static void submenu_append(const char *label, GtkWidget *menu)
 {
 	GtkWidget *menu_item;
 
 	menu_item = gtk_menu_item_new_with_label(label);
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
 	gtk_widget_show(menu_item);
 }
 
-static void menu_append(const char *label, GtkWidget *menu, GtkWidget *menu_bar)
+static GtkWidget *make_file_menu(void)
+{
+	GtkWidget *menu;
+
+	menu = gtk_menu_new();
+	submenu_append("New...", menu);
+	submenu_append("Open...", menu);
+	submenu_append("Save", menu);
+	submenu_append("Save As...", menu);
+	submenu_append("Close", menu);
+	submenu_append("Quit", menu);
+	return menu;
+}
+
+static GtkWidget *make_help_menu(void)
+{
+	GtkWidget *menu;
+
+	menu = gtk_menu_new();
+	submenu_append("Help", menu);
+	submenu_append("About", menu);
+	return menu;
+}
+
+static void menu_append(const char *label, GtkMenuShell *shell, GtkWidget *menu)
 {
 	GtkWidget *menu_item;
 
 	menu_item = gtk_menu_item_new_with_label(label);
 	gtk_menu_item_set_submenu(GTK_MENU_ITEM(menu_item), menu);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), menu_item);
+	gtk_menu_shell_append(shell, menu_item);
 	gtk_widget_show(menu_item);
 }
 
-static GtkWidget *make_menu(void)
+static GtkWidget *make_menu_bar(void)
 {
-	GtkWidget *menu, *menu_bar;
+	GtkWidget *menu_bar;
 
-	/* Menu Bar */
 	menu_bar = gtk_menu_bar_new();
 	gtk_widget_set_hexpand(menu_bar, TRUE);
 
-	/* File */
-	menu = gtk_menu_new();
-	submenu_append("New...", menu, NULL);
-	submenu_append("Open...", menu, NULL);
-	menu_append("File", menu, menu_bar);
-
-	return menu;
+	menu_append("File", GTK_MENU_SHELL(menu_bar), make_file_menu());
+	menu_append("Help", GTK_MENU_SHELL(menu_bar), make_help_menu());
+	return menu_bar;
 }
 
+/* Externals */
 void gui__primary_activate(GtkApplication *app, gpointer arg)
 {
-	GtkWidget *win, *grid;
-	GtkWidget *listbox, *ref_btn, *conf_btn;
-	GtkWidget *menu;
+	GtkWidget *win, *box, *menu_bar;
 
 	UNUSED(arg);
-
-	/* Menu */
-	menu = make_menu();
 
 	/* Window */
 	win = gtk_application_window_new(app);
 	gtk_window_set_title(GTK_WINDOW(win), "Wacom Plus");
 	gtk_window_set_default_size(GTK_WINDOW(win), 700, 850);
 	gtk_window_set_position(GTK_WINDOW(win), GTK_WIN_POS_CENTER);
+	g_signal_connect(win, "destroy", gui_primary_destroy, win);
 
-	/* Listbox */
-	listbox = gtk_list_box_new();
+	/* Box */
+	box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	gtk_container_add(GTK_CONTAINER(win), box);
+	gtk_widget_show(box);
 
-	/* Refresh button */
-	ref_btn = gtk_button_new_with_label("Refresh");
-	g_signal_connect(ref_btn, "clicked", gui_primary_refresh, NULL);
-
-	/* Configure button */
-	conf_btn = gtk_button_new_with_label("Configure");
-	g_signal_connect(conf_btn, "clicked", gui_primary_configure, NULL);
-
-	/* Grid placement */
-	grid = gtk_grid_new();
-	gtk_container_set_border_width(GTK_CONTAINER(grid), 5);
-	gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
-	gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
-	gtk_grid_set_row_homogeneous(GTK_GRID(grid), FALSE);
-	gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
-	gtk_grid_attach(GTK_GRID(grid),
-			listbox,
-			/* col */ 0,
-			/* row */ 0,
-			/* width */ 8,
-			/* height */ 25);
-	gtk_grid_attach(GTK_GRID(grid),
-			ref_btn,
-			/* col */ 0,
-			/* row */ 25,
-			/* width */ 4,
-			/* height */ 2);
-	gtk_grid_attach(GTK_GRID(grid),
-			conf_btn,
-			/* col */ 4,
-			/* row */ 25,
-			/* width */ 4,
-			/* height */ 2);
+	/* Menu Bar */
+	menu_bar = make_menu_bar();
+	gtk_box_pack_start(GTK_BOX(box), menu_bar, FALSE, FALSE, 0);
+	gtk_widget_show(menu_bar);
 
 	/* Finish */
-	gtk_container_add(GTK_CONTAINER(win), grid);
-	gtk_widget_show_all(win);
+	gtk_widget_show(win);
 }
 
-void gui__primary_refresh(GtkApplication *app, gpointer arg)
+void gui__primary_destroy(GtkApplication *app, gpointer arg)
+{
+	UNUSED(app);
+	UNUSED(arg);
+}
+
+void gui__primary_open(GtkApplication *app, gpointer arg)
 {
 }
 
-void gui__primary_configure(GtkApplication *app, gpointer arg)
+void gui__primary_saveas(GtkApplication *app, gpointer arg)
 {
 }
 
-#if 0
 void gui__primary_about(GtkApplication *app, gpointer arg)
 {
 	GtkWidget *win;
@@ -140,4 +133,3 @@ void gui__primary_about(GtkApplication *app, gpointer arg)
 	/* Finish */
 	gtk_widget_show_all(win);
 }
-#endif

@@ -25,14 +25,16 @@
 #include "gui_core.h"
 
 void gui__primary_activate(GtkApplication *app, gpointer arg);
-void gui__primary_refresh(GtkApplication *app, gpointer arg);
-void gui__primary_configure(GtkApplication *app, gpointer arg);
+void gui__primary_destroy(GtkApplication *app, gpointer arg);
+void gui__primary_open(GtkApplication *app, gpointer arg);
+void gui__primary_saveas(GtkApplication *app, gpointer arg);
 void gui__primary_about(GtkApplication *app, gpointer arg);
 void gui__primary_close(GtkApplication *app, gpointer arg);
 
 #define gui_primary_activate		_GUI_CBF(primary, activate)
-#define gui_primary_refresh		_GUI_CBF(primary, refresh)
-#define gui_primary_configure		_GUI_CBF(primary, configure)
+#define gui_primary_destroy		_GUI_CBF(primary, destroy)
+#define gui_primary_open		_GUI_CBF(primary, open)
+#define gui_primary_saveas		_GUI_CBF(primary, saveas)
 #define gui_primary_about		_GUI_CBF(primary, about)
 #define gui_primary_close		_GUI_CBF(primary, close)
 
