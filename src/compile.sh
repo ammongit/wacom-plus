@@ -12,6 +12,7 @@ verbose=false
 packages=(
 	'gtk+-3.0'
 	'json-c'
+	'xorg-wacom'
 	'libwacom'
 )
 
