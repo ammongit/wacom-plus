@@ -1,5 +1,5 @@
 ## wacom-plus
-An Wacom tablet configuration GUI for Linux. There are a few already in existence, but I found them to be quite lacking and out-of-date. This project seeks to make tablet configuration as easy as it is on Windows.
+A Wacom tablet configuration GUI for Linux. There are a few already in existence, but I found them to be quite lacking and out-of-date. This project seeks to make tablet configuration as easy as it is on Windows.
 
 ### Requirements
 * Bash
@@ -11,7 +11,7 @@ An Wacom tablet configuration GUI for Linux. There are a few already in existenc
 * `libwacom`
 
 ### Compilation
-Invoke `compile.sh release` in `src/`
+Invoke `compile.sh release` in `src/`. Yes, a shell script.
 
 Available under the GPL, version two or later.
 
