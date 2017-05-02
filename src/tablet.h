@@ -58,7 +58,7 @@ union tablet_argument {
 enum tablet_parameter {
 	PARAM_TABLET_AREA,		/* points */
 	PARAM_BUTTON_MAPPING,		/* mapping */
-	PARAM_BIND_TO_SERIAL,		/* str */
+	PARAM_BIND_TO_SERIAL,		/* num */
 	PARAM_MAP_OUTPUT,		/* str */
 	PARAM_MODE,			/* mode */
 	PARAM_PRESSURE_CURVE,		/* points */

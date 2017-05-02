@@ -541,15 +541,15 @@ int tablet_set_parameter(struct tablet *tablet,
 	case PARAM_STRIP_LEFT_DOWN_MAPPING:
 	case PARAM_STRIP_RIGHT_UP_MAPPING:
 	case PARAM_STRIP_RIGHT_DOWN_MAPPING:
-		/* TODO */
+		/* TODO set_map() */
 		break;
-	case PARAM_BIND_TO_SERIAL:
 	case PARAM_MAP_OUTPUT:
-		/* TODO */
+		/* TODO set_area() */
 		break;
 	case PARAM_MODE:
 		write_param(param, data, 0, val->mode);
 		break;
+	case PARAM_BIND_TO_SERIAL:
 	case PARAM_RAW_SAMPLE:
 	case PARAM_ROTATION:
 	case PARAM_SUPPRESS:
