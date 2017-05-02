@@ -493,9 +493,59 @@ static long read_prop(const struct param *param,
 
 /* Assumes "matrix" is exactly length 9 */
 static int set_matrix_prop(const struct tablet *tablet,
-			   float *matrix)
+			   float *fmatrix)
 {
-	/* TODO */
+	Atom matrix_prop, type;
+	long matrix[9] = {0};
+	float *data;
+	unsigned long nitems, bytes_after;
+	int format;
+	size_t i;
+
+	matrix_prop = XInternAtom(tablet->dpy,
+				  "Coordinate Transformation Matrix",
+				  True);
+	if (!matrix_prop)
+		return -1;
+
+	for (i = 0; i < 9; i++) {
+		union {
+			long l;
+			float f;
+		} u;
+
+		u.f = fmatrix[i];
+		matrix[i] = u.l;
+	}
+
+	if (XGetDeviceProperty(tablet->dpy,
+			       tablet->dev,
+			       matrix_prop,
+			       0,
+			       9,
+			       False,
+			       AnyPropertyType,
+			       &type,
+			       &format,
+			       &nitems,
+			       &bytes_after,
+			       (unsigned char **)(&data)))
+		return -1;
+
+	assert(format == 32);
+	assert(type == XInternAtom(tablet->dpy, "FLOAT", True));
+
+	XChangeDeviceProperty(tablet->dpy,
+			      tablet->dev,
+			      matrix_prop,
+			      type,
+			      format,
+			      PropModeReplace,
+			      (unsigned char *)matrix,
+			      9);
+	XFree(data);
+	XFlush(tablet->dpy);
+	return 0;
 }
 
 static int set_output_area(const struct tablet *tablet,
