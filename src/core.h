@@ -24,7 +24,9 @@
 
 #include <stddef.h>
 
-/* Definitions */
+/*-------------*/
+/* DEFINITIONS */
+/*-------------*/
 
 #define PROGRAM_NAME				"wacom-plus"
 #define PROGRAM_VERSION_MAJOR			0
@@ -67,14 +69,18 @@
 # define COMPILER_VERSION			"compiler"
 #endif
 
-/* Macros and inline functions */
+/*--------*/
+/* MACROS */
+/*--------*/
 
 #define UNUSED(x)				((void)(x))
 #define DEFAULT(x,alt)				((x) ? (x) : (alt))
 #define STATIC_ASSERT(x)			((void)sizeof(char[2 * (!!(x)) - 1]))
 #define ARRAY_SIZE(x)				(sizeof(x) / (sizeof((x)[0])))
 
-/* GNU Extensions */
+/*----------------*/
+/* GNU EXTENSIONS */
+/*----------------*/
 
 #if defined(__GNUC__)
 # define likely(x)				(__builtin_expect(!!(x), 1))
@@ -84,7 +90,17 @@
 # define unlikely(x)				(x)
 #endif /* __GNUC__ */
 
-/* External functions */
+/*-----------*/
+/* EXTERNALS */
+/*-----------*/
+
+/*
+ * This will be set whenever an int-returning
+ * function returns nonzero so the GUI can
+ * print an error. It will _not_ be set to 0
+ * when a function completes successfully.
+ */
+extern const char *last_err_str;
 
 void init(void);
 void cleanup(void);

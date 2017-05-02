@@ -407,7 +407,6 @@ static Bool test_property(const struct tablet *tablet, Atom prop)
 			break;
 		}
 	}
-
 	XFree(properties);
 	return found;
 }
@@ -440,8 +439,10 @@ static const struct param *get_param(const struct tablet *tablet,
 	param = &parameters[param_e];
 	if (param->prop_name) {
 		*prop = XInternAtom(tablet->dpy, param->prop_name, True);
-		if (!prop || !test_property(tablet, *prop))
+		if (!prop || !test_property(tablet, *prop)) {
+			last_err_str = "Cannot find tablet property";
 			return NULL;
+		}
 	} else {
 		prop = None;
 	}
@@ -493,7 +494,7 @@ static long read_prop(const struct param *param,
 
 /* Assumes "matrix" is exactly length 9 */
 static int set_matrix_prop(const struct tablet *tablet,
-			   float *fmatrix)
+			   const float *fmatrix)
 {
 	Atom matrix_prop, type;
 	long matrix[9] = {0};
@@ -505,8 +506,10 @@ static int set_matrix_prop(const struct tablet *tablet,
 	matrix_prop = XInternAtom(tablet->dpy,
 				  "Coordinate Transformation Matrix",
 				  True);
-	if (!matrix_prop)
+	if (!matrix_prop) {
+		last_err_str = "X Server does not support transformation";
 		return -1;
+	}
 
 	for (i = 0; i < 9; i++) {
 		union {
@@ -529,8 +532,10 @@ static int set_matrix_prop(const struct tablet *tablet,
 			       &format,
 			       &nitems,
 			       &bytes_after,
-			       (unsigned char **)(&data)))
+			       (unsigned char **)(&data))) {
+		last_err_str = "Unable to get transformation setting";
 		return -1;
+	}
 
 	assert(format == 32);
 	assert(type == XInternAtom(tablet->dpy, "FLOAT", True));
@@ -610,6 +615,7 @@ static int set_output_xrandr(const struct tablet *tablet,
 			goto end;
 		}
 	}
+	last_err_str = "Unable to find output";
 	ret = -1;
 end:
 	XRRFreeScreenResources(res);
@@ -624,11 +630,14 @@ static int set_output_xinerama(const struct tablet *tablet,
 
 	if (!XineramaQueryExtension(tablet->dpy,
 				    &event,
-				    &error))
+				    &error)) {
+		last_err_str = "Xinerama extension not found";
 		return -1;
+	}
 
 	screens = XineramaQueryScreens(tablet->dpy, &nscreens);
 	if (!nscreens || nscreens <= head) {
+		last_err_str = "Unable to find output";
 		ret = -1;
 		goto end;
 	}
@@ -650,12 +659,16 @@ static int set_output(const struct tablet *tablet,
 		char *ptr;
 		int head;
 
-		if (strncasecmp(output, "HEAD-", 5))
+		if (strncasecmp(output, "HEAD-", 5)) {
+			last_err_str = "Output name not in form 'HEAD-[number]'";
 			return -1;
+		}
 		output += 5;
 		head = strtol(output, &ptr, 10);
-		if (!*output || *ptr)
+		if (!*output || *ptr) {
+			last_err_str = "Output name not in form 'HEAD-[number]'";
 			return -1;
+		}
 
 		return set_output_xinerama(tablet, head);
 	} else {
@@ -685,8 +698,10 @@ int tablet_open(struct tablet *tablet, Display *dpy, XID id)
 	XDevice *dev;
 
 	dev = XOpenDevice(dpy, id);
-	if (!dev)
+	if (!dev) {
+		last_err_str = "Unable to open X device";
 		return -1;
+	}
 
 	tablet->dpy = dpy;
 	tablet->dev = dev;
@@ -709,8 +724,10 @@ int tablet_set_parameter(struct tablet *tablet,
 	int ret, format;
 
 	param = get_param(tablet, param_e, &prop);
-	if (!param)
+	if (!param) {
+		/* last_err_str already set */
 		return -1;
+	}
 
 	if (XGetDeviceProperty(tablet->dpy,
 			       tablet->dev,
@@ -724,15 +741,22 @@ int tablet_set_parameter(struct tablet *tablet,
 			       &nitems,
 			       &bytes_after,
 			       &data)) {
+		last_err_str = "Unable to get device property";
 		ret = -1;
 		goto end;
 	}
 	if (nitems <= param->prop_offset) {
+		last_err_str = "Property offset out of range";
 		ret = -1;
 		goto end;
 	}
-
 	if (format != param->prop_format || type != XA_INTEGER) {
+		last_err_str = "Property format incorrect";
+		ret = -1;
+		goto end;
+	}
+	if (param->readonly) {
+		last_err_str = "Property is read-only";
 		ret = -1;
 		goto end;
 	}
@@ -823,8 +847,10 @@ int tablet_get_parameter(const struct tablet *tablet,
 	int ret, format;
 
 	param = get_param(tablet, param_e, &prop);
-	if (!param)
+	if (!param) {
+		/* last_err_str already set */
 		return -1;
+	}
 
 	if (XGetDeviceProperty(tablet->dpy,
 			       tablet->dev,
@@ -838,10 +864,17 @@ int tablet_get_parameter(const struct tablet *tablet,
 			       &nitems,
 			       &bytes_after,
 			       &data)) {
+		last_err_str = "Unable to get device property";
 		ret = -1;
 		goto end;
 	}
 	if (nitems <= param->prop_offset) {
+		last_err_str = "Property offset out of range";
+		ret = -1;
+		goto end;
+	}
+	if (param->writeonly) {
+		last_err_str = "Property is write-only";
 		ret = -1;
 		goto end;
 	}
@@ -866,9 +899,6 @@ int tablet_get_parameter(const struct tablet *tablet,
 	case PARAM_STRIP_RIGHT_UP_MAPPING:
 	case PARAM_STRIP_RIGHT_DOWN_MAPPING:
 		/* TODO get_map() */
-		break;
-	case PARAM_MAP_OUTPUT:
-		/* TODO get_area() */
 		break;
 	case PARAM_MODE:
 		val->mode = read_prop(param, data, 0);
@@ -903,6 +933,7 @@ int tablet_get_parameter(const struct tablet *tablet,
 		val->xid = read_prop(param, data, 0);
 		break;
 	case PARAM_RESET_AREA:
+	case PARAM_MAP_OUTPUT:
 	case NUM_PARAMS:
 		/* do nothing */
 		break;

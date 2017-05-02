@@ -67,16 +67,18 @@ int write_settings(const struct settings *st, const char *path)
 	struct json_object *obj;
 
 	obj = to_json(st);
-	if (!obj)
+	if (!obj) {
+		/* last_err_str already set */
 		return -1;
+	}
 
 	fh = fopen(path, "w");
 	if (!fh) {
-		perror("Unable to open settings file for reading");
+		last_err_str = "Unable to open settings file for reading";
 		return -1;
 	}
 	if (fputs(json_object_to_json_string(obj), fh) == EOF) {
-		perror("Unable to write to settings file");
+		last_err_str = "Unable to write to settings file";
 		return -1;
 	}
 	fclose(fh);

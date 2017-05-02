@@ -29,6 +29,8 @@
 #include "tablet.h"
 #include "tablet_core.h"
 
+const char *last_err_str;
+
 void init(void)
 {
 	size_t i;

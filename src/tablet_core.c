@@ -33,8 +33,10 @@ int tablet_core_init(void)
 {
 	db = libwacom_database_new();
 	err = libwacom_error_new();
-	if (!db || !err)
+	if (!db || !err) {
+		last_err_str = "Unable to initialize Wacom database";
 		return -1;
+	}
 	return 0;
 }
 
@@ -48,8 +50,10 @@ int tablet_refresh_list(void)
 {
 	free(list);
 	list = libwacom_list_devices_from_database(db, err);
-	if (!list)
+	if (!list) {
+		last_err_str = "Unable to get list of Wacom devices";
 		return -1;
+	}
 	return 0;
 }
 
@@ -59,12 +63,18 @@ int tablets_device_iterate(Display *dpy, tablets_device_list_cbf cbf, void *arg)
 	int i, num_devices, ret;
 
 	devices = XListInputDevices(dpy, &num_devices);
-	if (!devices)
+	if (!devices) {
+		last_err_str = "Unable to get list of X input devices";
 		return -1;
+	}
 
 	ret = 0;
 	for (i = 0; i < num_devices; i++) {
-		if (cbf(arg, devices[i].id, devices[i].name, devices[i].type)) {
+		const XDeviceInfo *inf;
+
+		inf = &devices[i];
+		if (cbf(arg, inf->id, inf->name, inf->type)) {
+			/* last_err_str should be set by the callback */
 			ret = -1;
 			break;
 		}
