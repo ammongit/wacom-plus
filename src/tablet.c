@@ -491,12 +491,40 @@ static long read_prop(const struct param *param,
 	return -1;
 }
 
-static int set_output_area(const struct tablet *tablet,
-			   int x,
-			   int y,
-			   int width,
-			   int height)
+/* Assumes "matrix" is exactly length 9 */
+static int set_matrix_prop(const struct tablet *tablet,
+			   float *matrix)
 {
+	/* TODO */
+}
+
+static int set_output_area(const struct tablet *tablet,
+			   int off_x,
+			   int off_y,
+			   int out_width,
+			   int out_height)
+{
+	int width, height;
+	float x, y, w, h;
+	float matrix[9] = {
+		1, 0, 0,
+		0, 1, 0,
+		0, 0, 1
+	};
+
+	width = DisplayWidth(tablet->dpy, DefaultScreen(tablet->dpy));
+	height = DisplayHeight(tablet->dpy, DefaultScreen(tablet->dpy));
+	x = 1.0 * off_x / width;
+	y = 1.0 * off_y / height;
+	w = 1.0 * out_width / width;
+	h = 1.0 * out_height / height;
+
+	matrix[2] = x;
+	matrix[5] = y;
+	matrix[0] = w;
+	matrix[4] = h;
+
+	return set_matrix_prop(tablet, matrix);
 }
 
 static int set_output_xrandr(const struct tablet *tablet,
