@@ -5,6 +5,8 @@ A Wacom tablet configuration GUI for Linux. There are a few already in existence
 * Bash
 * ANSI C Compiler
 * GTK 3.0
+* X11 headers
+* Xinput
 * `pkg-config`
 * `json-c`
 * `xf86-input-wacom`
