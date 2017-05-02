@@ -426,10 +426,10 @@ static const struct param *get_param(const struct tablet *tablet,
 	return param;
 }
 
-static void write_param(const struct param *param,
-			unsigned char *data,
-			size_t index,
-			long val)
+static void write_prop(const struct param *param,
+		       unsigned char *data,
+		       size_t index,
+		       long val)
 {
 	union {
 		char *bytes;
@@ -446,6 +446,27 @@ static void write_param(const struct param *param,
 		u.longs[param->prop_offset + index] = val;
 		break;
 	}
+}
+
+static long read_prop(const struct param *param,
+		      const unsigned char *data,
+		      size_t index)
+{
+	union {
+		const char *bytes;
+		const long *longs;
+	} u;
+
+	switch (param->prop_format) {
+	case 8:
+		u.bytes = (const char *)data;
+		return u.bytes[param->prop_offset + index];
+	case 32:
+		u.longs = (const long *)data;
+		return u.longs[param->prop_offset + index];
+	}
+	assert(0);
+	return -1;
 }
 
 /*-----------*/
@@ -525,10 +546,10 @@ int tablet_set_parameter(struct tablet *tablet,
 	switch (param_e) {
 	case PARAM_TABLET_AREA:
 	case PARAM_PRESSURE_CURVE:
-		write_param(param, data, 0, val->points.x1);
-		write_param(param, data, 1, val->points.y1);
-		write_param(param, data, 2, val->points.x2);
-		write_param(param, data, 3, val->points.y2);
+		write_prop(param, data, 0, val->points.x1);
+		write_prop(param, data, 1, val->points.y1);
+		write_prop(param, data, 2, val->points.x2);
+		write_prop(param, data, 3, val->points.y2);
 		break;
 	case PARAM_BUTTON_MAPPING:
 	case PARAM_WHEEL_UP_MAPPING:
@@ -547,7 +568,7 @@ int tablet_set_parameter(struct tablet *tablet,
 		/* TODO set_area() */
 		break;
 	case PARAM_MODE:
-		write_param(param, data, 0, val->mode);
+		write_prop(param, data, 0, val->mode);
 		break;
 	case PARAM_BIND_TO_SERIAL:
 	case PARAM_RAW_SAMPLE:
@@ -560,7 +581,7 @@ int tablet_set_parameter(struct tablet *tablet,
 	case PARAM_GESTURE_TAP_TIME:
 	case PARAM_GESTURE_ZOOM_DIST:
 	case PARAM_GESTURE_SCROLL_DIST:
-		write_param(param, data, 0, val->num);
+		write_prop(param, data, 0, val->num);
 		break;
 	case PARAM_HOVER:
 	case PARAM_SERIAL_PREVIOUS:
@@ -568,13 +589,13 @@ int tablet_set_parameter(struct tablet *tablet,
 	case PARAM_HW_TOUCH_SWITCH_STATE:
 	case PARAM_PRESSURE_RECALIBRATION:
 	case PARAM_GESTURE_ENABLED:
-		write_param(param, data, 0, val->boolean);
+		write_prop(param, data, 0, val->boolean);
 		break;
 	case PARAM_TOOL_TYPE:
 	case PARAM_TOOL_SERIAL:
 	case PARAM_TOOL_ID:
 	case PARAM_TABLET_ID:
-		write_param(param, data, 0, val->xid);
+		write_prop(param, data, 0, val->xid);
 		break;
 	case PARAM_RESET_AREA:
 	case NUM_PARAMS:
@@ -631,8 +652,67 @@ int tablet_get_parameter(const struct tablet *tablet,
 		goto end;
 	}
 
-	/* TODO */
-printf("<%s>\n", data);
+	switch (param_e) {
+	case PARAM_TABLET_AREA:
+	case PARAM_PRESSURE_CURVE:
+		val->points.x1 = read_prop(param, data, 0);
+		val->points.y1 = read_prop(param, data, 1);
+		val->points.x2 = read_prop(param, data, 2);
+		val->points.y2 = read_prop(param, data, 3);
+		break;
+	case PARAM_BUTTON_MAPPING:
+	case PARAM_WHEEL_UP_MAPPING:
+	case PARAM_WHEEL_DOWN_MAPPING:
+	case PARAM_ABS_WHEEL_UP_MAPPING:
+	case PARAM_ABS_WHEEL_DOWN_MAPPING:
+	case PARAM_ABS_WHEEL2_UP_MAPPING:
+	case PARAM_ABS_WHEEL2_DOWN_MAPPING:
+	case PARAM_STRIP_LEFT_UP_MAPPING:
+	case PARAM_STRIP_LEFT_DOWN_MAPPING:
+	case PARAM_STRIP_RIGHT_UP_MAPPING:
+	case PARAM_STRIP_RIGHT_DOWN_MAPPING:
+		/* TODO get_map() */
+		break;
+	case PARAM_MAP_OUTPUT:
+		/* TODO get_area() */
+		break;
+	case PARAM_MODE:
+		val->mode = read_prop(param, data, 0);
+		assert(val->mode == MODE_ABSOLUTE || val->mode == MODE_RELATIVE);
+		break;
+	case PARAM_BIND_TO_SERIAL:
+	case PARAM_RAW_SAMPLE:
+	case PARAM_ROTATION:
+	case PARAM_SUPPRESS:
+	case PARAM_TABLET_DEBUG_LEVEL:
+	case PARAM_CURSOR_PROXIMITY:
+	case PARAM_THRESHOLD:
+	case PARAM_TOOL_DEBUG_LEVEL:
+	case PARAM_GESTURE_TAP_TIME:
+	case PARAM_GESTURE_ZOOM_DIST:
+	case PARAM_GESTURE_SCROLL_DIST:
+		val->num = read_prop(param, data, 0);
+		break;
+	case PARAM_HOVER:
+	case PARAM_SERIAL_PREVIOUS:
+	case PARAM_TOUCH:
+	case PARAM_HW_TOUCH_SWITCH_STATE:
+	case PARAM_PRESSURE_RECALIBRATION:
+	case PARAM_GESTURE_ENABLED:
+		val->boolean = read_prop(param, data, 0);
+		assert(val->boolean == !!val->boolean);
+		break;
+	case PARAM_TOOL_TYPE:
+	case PARAM_TOOL_SERIAL:
+	case PARAM_TOOL_ID:
+	case PARAM_TABLET_ID:
+		val->xid = read_prop(param, data, 0);
+		break;
+	case PARAM_RESET_AREA:
+	case NUM_PARAMS:
+		/* do nothing */
+		break;
+	}
 
 	ret = 0;
 end:
