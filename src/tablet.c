@@ -24,6 +24,7 @@
 
 #include <xorg/Xwacom.h>
 #include <xorg/wacom-properties.h>
+#include <X11/Xatom.h>
 
 #include "tablet.h"
 
@@ -425,6 +426,28 @@ static const struct param *get_param(const struct tablet *tablet,
 	return param;
 }
 
+static void write_param(const struct param *param,
+			unsigned char *data,
+			size_t index,
+			long val)
+{
+	union {
+		char *bytes;
+		long *longs;
+	} u;
+
+	switch (param->prop_format) {
+	case 8:
+		u.bytes = (char *)data;
+		u.bytes[param->prop_offset + index] = val;
+		break;
+	case 32:
+		u.longs = (long *)data;
+		u.longs[param->prop_offset + index] = val;
+		break;
+	}
+}
+
 /*-----------*/
 /* EXTERNALS */
 /*-----------*/
@@ -462,7 +485,7 @@ void tablet_close(struct tablet *tablet)
 
 int tablet_set_parameter(struct tablet *tablet,
 			 enum tablet_parameter param_e,
-			 const union tablet_argument *arg)
+			 const union tablet_argument *val)
 {
 	const struct param *param;
 	Atom prop, type;
@@ -494,7 +517,70 @@ int tablet_set_parameter(struct tablet *tablet,
 		goto end;
 	}
 
-	//
+	if (format != param->prop_format || type != XA_INTEGER) {
+		ret = -1;
+		goto end;
+	}
+
+	switch (param_e) {
+	case PARAM_TABLET_AREA:
+	case PARAM_PRESSURE_CURVE:
+		write_param(param, data, 0, val->points.x1);
+		write_param(param, data, 1, val->points.y1);
+		write_param(param, data, 2, val->points.x2);
+		write_param(param, data, 3, val->points.y2);
+		break;
+	case PARAM_BUTTON_MAPPING:
+	case PARAM_WHEEL_UP_MAPPING:
+	case PARAM_WHEEL_DOWN_MAPPING:
+	case PARAM_ABS_WHEEL_UP_MAPPING:
+	case PARAM_ABS_WHEEL_DOWN_MAPPING:
+	case PARAM_ABS_WHEEL2_UP_MAPPING:
+	case PARAM_ABS_WHEEL2_DOWN_MAPPING:
+	case PARAM_STRIP_LEFT_UP_MAPPING:
+	case PARAM_STRIP_LEFT_DOWN_MAPPING:
+	case PARAM_STRIP_RIGHT_UP_MAPPING:
+	case PARAM_STRIP_RIGHT_DOWN_MAPPING:
+		/* TODO */
+		break;
+	case PARAM_BIND_TO_SERIAL:
+	case PARAM_MAP_OUTPUT:
+		/* TODO */
+		break;
+	case PARAM_MODE:
+		write_param(param, data, 0, val->mode);
+		break;
+	case PARAM_RAW_SAMPLE:
+	case PARAM_ROTATION:
+	case PARAM_SUPPRESS:
+	case PARAM_TABLET_DEBUG_LEVEL:
+	case PARAM_CURSOR_PROXIMITY:
+	case PARAM_THRESHOLD:
+	case PARAM_TOOL_DEBUG_LEVEL:
+	case PARAM_GESTURE_TAP_TIME:
+	case PARAM_GESTURE_ZOOM_DIST:
+	case PARAM_GESTURE_SCROLL_DIST:
+		write_param(param, data, 0, val->num);
+		break;
+	case PARAM_HOVER:
+	case PARAM_SERIAL_PREVIOUS:
+	case PARAM_TOUCH:
+	case PARAM_HW_TOUCH_SWITCH_STATE:
+	case PARAM_PRESSURE_RECALIBRATION:
+	case PARAM_GESTURE_ENABLED:
+		write_param(param, data, 0, val->boolean);
+		break;
+	case PARAM_TOOL_TYPE:
+	case PARAM_TOOL_SERIAL:
+	case PARAM_TOOL_ID:
+	case PARAM_TABLET_ID:
+		write_param(param, data, 0, val->xid);
+		break;
+	case PARAM_RESET_AREA:
+	case NUM_PARAMS:
+		/* do nothing */
+		break;
+	}
 
 	XChangeDeviceProperty(tablet->dpy,
 			      tablet->dev,
@@ -513,7 +599,7 @@ end:
 
 int tablet_get_parameter(const struct tablet *tablet,
 			 enum tablet_parameter param_e,
-			 union tablet_argument *arg)
+			 union tablet_argument *val)
 {
 	const struct param *param;
 	Atom prop, type;
