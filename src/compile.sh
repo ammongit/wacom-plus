@@ -14,6 +14,8 @@ packages=(
 	'json-c'
 	'xorg-wacom'
 	'libwacom'
+	'x11'
+	'xi'
 )
 
 # Base flags
@@ -51,8 +53,8 @@ fi
 # Functions
 invoke() {
 	local name="$1"
-	local prog="$2"
-	local dest="$3"
+	local dest="$2"
+	local prog="$3"
 	shift 3
 
 	local args=("$prog" "$@")
@@ -110,7 +112,7 @@ compile() {
 		fi
 
 		# Compile the source file
-		invoke 'CC' "${CC:-cc}" "$obj" "${flags[@]}" "${cc_flags[@]}" -c -o "$obj" "$src"
+		invoke 'CC' "$obj" "${CC:-cc}" "${flags[@]}" "${cc_flags[@]}" "$src" -c -o "$obj"
 	done
 }
 
@@ -121,7 +123,7 @@ link() {
 	fi
 
 	# Link the final binary
-	invoke 'LD' "${LD:-cc}" "$target" "${flags[@]}" "${ld_flags[@]}" -o "$target" "${objects[@]}"
+	invoke 'LD' "$target" "${LD:-cc}" "${flags[@]}" "${ld_flags[@]}" "${objects[@]}" -o "$target"
 }
 
 clean() {

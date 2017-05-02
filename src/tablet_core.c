@@ -19,16 +19,21 @@
  *
  */
 
+#include <stdlib.h>
+
+#include <libwacom/libwacom.h>
+
 #include "tablet_core.h"
 
 static WacomDeviceDatabase *db;
 static WacomError *err;
+static WacomDevice **list;
 
 int tablet_init(void)
 {
-	if ((db = libwacom_database_new()) == NULL)
-		return -1;
-	if ((err = libwacom_error_new()) == NULL)
+	db = libwacom_database_new();
+	err = libwacom_error_new();
+	if (!db || !err)
 		return -1;
 	return 0;
 }
@@ -40,4 +45,31 @@ void tablet_cleanup(void)
 }
 
 
-int tablet_refresh_list(void);
+int tablet_refresh_list(void)
+{
+	free(list);
+	list = libwacom_list_devices_from_database(db, err);
+	if (!list)
+		return -1;
+	return 0;
+}
+
+int tablets_device_iterate(Display *dpy, tablets_device_list_cbf cbf, void *arg)
+{
+	XDeviceInfo *devices;
+	int i, num_devices, ret;
+
+	devices = XListInputDevices(dpy, &num_devices);
+	if (!devices)
+		return -1;
+
+	ret = 0;
+	for (i = 0; i < num_devices; i++) {
+		if (cbf(arg, devices[i].id, devices[i].name, devices[i].type)) {
+			ret = -1;
+			break;
+		}
+	}
+	XFreeDeviceList(devices);
+	return ret;
+}

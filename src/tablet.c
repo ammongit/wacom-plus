@@ -1,5 +1,5 @@
 /*
- * tablet_core.h
+ * tablet.c
  *
  * wacom-plus - Linux GUI configuration for Wacom tablets
  * Copyright (c) 2015-2016 Ammon Smith
@@ -19,32 +19,22 @@
  *
  */
 
-#ifndef _TABLET_CORE_H_
-#define _TABLET_CORE_H_
+#include "tablet.h"
 
-#include <X11/Xlib.h>
-#include <X11/extensions/XInput.h>
+int tablet_open(struct tablet *tablet, Display *dpy, XID id)
+{
+	XDevice *dev;
 
-#include "core.h"
+	dev = XOpenDevice(dpy, id);
+	if (!dev)
+		return -1;
 
-int tablet_init(void);
-void tablet_cleanup(void);
+	tablet->dpy = dpy;
+	tablet->dev = dev;
+	return 0;
+}
 
-/*
- * Refreshes the internal list of Wacom devices.
- * This is not performed by tablet_init()
- */
-int tablet_refresh_list(void);
-
-typedef int (*tablets_device_list_cbf)(
-		void *arg,
-		XID id,
-		const char *name,
-		Atom type);
-
-int tablets_device_iterate(Display *dpy,
-			   tablets_device_list_cbf cbf,
-			   void *arg);
-
-#endif /* _TABLET_CORE_H_ */
-
+void tablet_close(struct tablet *tablet)
+{
+	XCloseDevice(tablet->dpy, tablet->dev);
+}
