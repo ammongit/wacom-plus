@@ -1,6 +1,8 @@
 ## wacom-plus
 A Wacom tablet configuration GUI for Linux. There are a few already in existence, but I found them to be quite lacking and out-of-date. This project seeks to make tablet configuration as easy as it is on Windows.
 
+(Insert fancy screenshot here)
+
 ### Requirements
 * Bash
 * ANSI C Compiler
