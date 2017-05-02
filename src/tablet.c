@@ -20,14 +20,14 @@
  */
 
 #include <assert.h>
+#include <stdbool.h>
 
 #include <xorg/Xwacom.h>
 #include <xorg/wacom-properties.h>
 
 #include "tablet.h"
 
-#define X11_DEV_IN_BUFFER_LENGTH	1000
-#define X11_DEV_OUT_BUFFER_LENGTH	128
+#define X11_DEV_BUFFER_LENGTH	1000
 
 /*------*/
 /* DATA */
@@ -36,231 +36,343 @@
 static struct param {
 	const char *x11_name;
 	const char *prop_name;
-	unsigned int prop_offset;
-	unsigned int prop_format : 1;
-	unsigned int readonly    : 1;
+	unsigned short prop_format;
+	unsigned short prop_offset;
+	bool readonly  : 1;
+	bool writeonly : 1;
 } parameters[] = {
 	{
 		/* PARAM_TABLET_AREA */
 		"Area",
 		WACOM_PROP_TABLET_AREA,
+		32,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_BUTTON_MAPPING */
 		"Button",
 		WACOM_PROP_BUTTON_ACTIONS,
 		0,
+		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_BIND_TO_SERIAL */
 		"Serial",
 		WACOM_PROP_SERIAL_BIND,
+		32,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_MAP_OUTPUT */
 		"MapToOutput",
 		NULL,
 		0,
+		0,
+		False,
+		True,
 	},
 	{
 		/* PARAM_MODE */
 		"Mode",
 		NULL,
 		0,
+		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_PRESSURE_CURVE */
 		"PressCurve",
 		WACOM_PROP_PRESSURECURVE,
+		32,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_RAW_SAMPLE */
 		"RawSample",
 		WACOM_PROP_SAMPLE,
+		32,
 		1,
+		False,
+		False,
 	},
 	{
 		/* PARAM_ROTATION */
 		"Rotate",
 		WACOM_PROP_ROTATION,
 		0,
+		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_SUPPRESS */
 		"Suppress",
 		WACOM_PROP_SAMPLE,
+		32,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_TABLET_DEBUG_LEVEL */
 		"CommonDBG",
 		WACOM_PROP_DEBUGLEVELS,
+		8,
 		1,
+		False,
+		False,
 	},
 	{
 		/* PARAM_HOVER */
 		"TPCButton",
 		WACOM_PROP_HOVER,
+		8,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_SERIAL_PREVIOUS */
 		"ToolSerialPrevious",
 		WACOM_PROP_SERIALIDS,
+		32,
 		1,
+		True,
+		False,
 	},
 	{
 		/* PARAM_TOUCH */
 		"Touch",
 		WACOM_PROP_TOUCH,
+		8,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_HW_TOUCH_SWITCH_STATE */
 		"HWTouchSwitchState",
 		WACOM_PROP_HARDWARE_TOUCH,
+		8,
 		0,
+		True,
+		False,
 	},
 	{
 		/* PARAM_CURSOR_PROXIMITY */
 		"CursorProx",
 		WACOM_PROP_PROXIMITY_THRESHOLD,
+		32,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_THRESHOLD */
 		"Threshold",
 		WACOM_PROP_PRESSURE_THRESHOLD,
+		32,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_TOOL_DEBUG_LEVEL */
 		"DebugLevel",
 		WACOM_PROP_DEBUGLEVELS,
+		8,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_PRESSURE_RECALIBRATION */
 		"PressureRecalibration",
 		WACOM_PROP_PRESSURE_RECAL,
+		8,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_GESTURE_ENABLED */
 		"Gesture",
 		WACOM_PROP_ENABLE_GESTURE,
+		8,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_GESTURE_TAP_TIME */
 		"TapTime",
 		WACOM_PROP_GESTURE_PARAMETERS,
+		32,
 		2,
+		False,
+		False,
 	},
 	{
 		/* PARAM_GESTURE_ZOOM_DIST */
 		"ZoomDistance",
 		WACOM_PROP_GESTURE_PARAMETERS,
+		32,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_GESTURE_SCROLL_DIST */
 		"ScrollDistance",
 		WACOM_PROP_GESTURE_PARAMETERS,
+		32,
 		1,
+		False,
+		False,
 	},
 	{
 		/* PARAM_WHEEL_UP_MAPPING */
 		"RelWheelUp",
 		WACOM_PROP_WHEELBUTTONS,
+		8,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_WHEEL_DOWN_MAPPING */
 		"RelWheelDown",
 		WACOM_PROP_WHEELBUTTONS,
+		8,
 		1,
+		False,
+		False,
 	},
 	{
 		/* PARAM_ABS_WHEEL_UP_MAPPING */
 		"AbsWheelUp",
 		WACOM_PROP_WHEELBUTTONS,
+		8,
 		2,
+		False,
+		False,
 	},
 	{
 		/* PARAM_ABS_WHEEL_DOWN_MAPPING */
 		"AbsWheelDown",
 		WACOM_PROP_WHEELBUTTONS,
+		8,
 		3,
+		False,
+		False,
 	},
 	{
 		/* PARAM_ABS_WHEEL2_UP_MAPPING */
 		"AbsWheel2Up",
 		WACOM_PROP_WHEELBUTTONS,
+		8,
 		4,
+		False,
+		False,
 	},
 	{
 		/* PARAM_ABS_WHEEL2_DOWN_MAPPING */
 		"AbsWheel2Down",
 		WACOM_PROP_WHEELBUTTONS,
+		8,
 		5,
+		False,
+		False,
 	},
 	{
 		/* PARAM_STRIP_LEFT_UP_MAPPING */
 		"StripLeftUp",
 		WACOM_PROP_STRIPBUTTONS,
+		8,
 		0,
+		False,
+		False,
 	},
 	{
 		/* PARAM_STRIP_LEFT_DOWN_MAPPING */
 		"StripLeftDown",
 		WACOM_PROP_STRIPBUTTONS,
+		8,
 		1,
+		False,
+		False,
 	},
 	{
 		/* PARAM_STRIP_RIGHT_UP_MAPPING */
 		"StripRightUp",
 		WACOM_PROP_STRIPBUTTONS,
+		8,
 		2,
+		False,
+		False,
 	},
 	{
 		/* PARAM_STRIP_RIGHT_DOWN_MAPPING */
 		"StripRightDown",
 		WACOM_PROP_STRIPBUTTONS,
+		8,
 		3,
+		False,
+		False,
 	},
 	{
 		/* PARAM_RESET_AREA */
 		"ResetArea",
 		WACOM_PROP_TABLET_AREA,
+		32,
 		0,
+		False,
+		True,
 	},
 	{
 		/* PARAM_TOOL_TYPE */
 		"ToolType",
 		WACOM_PROP_TOOL_TYPE,
+		32,
 		0,
+		True,
+		False,
 	},
 	{
 		/* PARAM_TOOL_SERIAL */
 		"ToolSerial",
 		WACOM_PROP_SERIALIDS,
+		32,
 		3,
+		True,
+		False,
 	},
 	{
 		/* PARAM_TOOL_ID */
 		"ToolID",
 		WACOM_PROP_SERIALIDS,
+		32,
 		4,
+		True,
+		False,
 	},
 	{
 		/* PARAM_TABLET_ID */
 		"TabletID",
 		WACOM_PROP_SERIALIDS,
+		32,
 		0,
+		True,
+		False,
 	},
 };
 
@@ -366,7 +478,7 @@ int tablet_set_parameter(struct tablet *tablet,
 			       tablet->dev,
 			       prop,
 			       0,
-			       X11_DEV_OUT_BUFFER_LENGTH,
+			       X11_DEV_BUFFER_LENGTH,
 			       False,
 			       AnyPropertyType,
 			       &type,
@@ -417,7 +529,7 @@ int tablet_get_parameter(const struct tablet *tablet,
 			       tablet->dev,
 			       prop,
 			       0,
-			       X11_DEV_OUT_BUFFER_LENGTH,
+			       X11_DEV_BUFFER_LENGTH,
 			       False,
 			       AnyPropertyType,
 			       &type,
