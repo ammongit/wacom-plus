@@ -16,6 +16,8 @@ packages=(
 	'libwacom'
 	'x11'
 	'xi'
+	'xinerama'
+	'xrandr'
 )
 
 # Base flags

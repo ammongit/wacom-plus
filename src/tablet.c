@@ -21,10 +21,15 @@
 
 #include <assert.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
 
 #include <xorg/Xwacom.h>
 #include <xorg/wacom-properties.h>
 #include <X11/Xatom.h>
+#include <X11/extensions/Xrandr.h>
+#include <X11/extensions/Xinerama.h>
 
 #include "tablet.h"
 
@@ -407,6 +412,23 @@ static Bool test_property(const struct tablet *tablet, Atom prop)
 	return found;
 }
 
+static Bool need_xinerama(Display *dpy)
+{
+	int opcode, event, error;
+	int major, minor;
+
+	if (!XQueryExtension(dpy, "RANDR", &opcode, &event, &error))
+		return True;
+	if (!XRRQueryVersion(dpy, &major, &minor)) {
+		if ((major * 1000 + minor) < 1002) {
+			return True;
+		}
+	}
+	if (XQueryExtension(dpy, "NV-CONTROL", &opcode, &event, &error))
+		return True;
+	return False;
+}
+
 static const struct param *get_param(const struct tablet *tablet,
 				     enum tablet_parameter param_e,
 				     Atom *prop)
@@ -467,6 +489,100 @@ static long read_prop(const struct param *param,
 	}
 	assert(0);
 	return -1;
+}
+
+static int set_output_area(const struct tablet *tablet,
+			   int x,
+			   int y,
+			   int width,
+			   int height)
+{
+}
+
+static int set_output_xrandr(const struct tablet *tablet,
+			     const char *output)
+{
+	int x, y, width, height;
+	int i, ret;
+	XRRScreenResources *res;
+	XRROutputInfo *output_info;
+	XRRCrtcInfo *crtc_info;
+
+	res = XRRGetScreenResources(tablet->dpy,
+				    DefaultRootWindow(tablet->dpy));
+	for (i = 0; i < res->noutput; i++) {
+		output_info = XRRGetOutputInfo(tablet->dpy,
+					       res,
+					       res->outputs[i]);
+		if (!output_info->crtc ||
+		     output_info->connection != RR_Connected)
+			continue;
+
+		crtc_info = XRRGetCrtcInfo(tablet->dpy,
+					   res,
+					   output_info->crtc);
+		x = crtc_info->x;
+		y = crtc_info->y;
+		width = crtc_info->width;
+		height = crtc_info->height;
+		XRRFreeCrtcInfo(crtc_info);
+
+		if (!strcmp(output_info->name, output)) {
+			ret = set_output_area(tablet, x, y, width, height);
+			goto end;
+		}
+	}
+	ret = -1;
+end:
+	XRRFreeScreenResources(res);
+	return ret;
+}
+
+static int set_output_xinerama(const struct tablet *tablet,
+			       int head)
+{
+	XineramaScreenInfo *screens;
+	int event, error, nscreens, ret;
+
+	if (!XineramaQueryExtension(tablet->dpy,
+				    &event,
+				    &error))
+		return -1;
+
+	screens = XineramaQueryScreens(tablet->dpy, &nscreens);
+	if (!nscreens || nscreens <= head) {
+		ret = -1;
+		goto end;
+	}
+
+	ret = set_output_area(tablet,
+			      screens[head].x_org,
+			      screens[head].y_org,
+			      screens[head].width,
+			      screens[head].height);
+end:
+	XFree(screens);
+	return ret;
+}
+
+static int set_output(const struct tablet *tablet,
+		      const char *output)
+{
+	if (need_xinerama(tablet->dpy)) {
+		char *ptr;
+		int head;
+
+		if (strncasecmp(output, "HEAD-", 5))
+			return -1;
+		output += 5;
+		head = strtol(output, &ptr, 10);
+		if (!*output || *ptr)
+			return -1;
+
+		return set_output_xinerama(tablet, head);
+	} else {
+		return set_output_xrandr(tablet, output);
+	}
 }
 
 /*-----------*/
@@ -565,7 +681,7 @@ int tablet_set_parameter(struct tablet *tablet,
 		/* TODO set_map() */
 		break;
 	case PARAM_MAP_OUTPUT:
-		/* TODO set_area() */
+		set_output(tablet, val->str);
 		break;
 	case PARAM_MODE:
 		write_prop(param, data, 0, val->mode);
