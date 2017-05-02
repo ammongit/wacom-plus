@@ -26,6 +26,7 @@
 
 #include "core.h"
 #include "gui_core.h"
+#include "tablet.h"
 #include "tablet_core.h"
 
 void init(void)
@@ -35,7 +36,8 @@ void init(void)
 		int (*cbf)(void);
 	} init_funcs[] = {
 		{ gui_init },
-		{ tablet_init }
+		{ tablet_core_init },
+		{ tablet_obj_init }
 	};
 
 	atexit(cleanup);
@@ -55,7 +57,8 @@ void cleanup(void)
 		void (*cbf)(void);
 	} cleanup_funcs[] = {
 		{ gui_cleanup },
-		{ tablet_cleanup }
+		{ tablet_core_cleanup },
+		{ tablet_obj_cleanup }
 	};
 
 	for (i = 0; i < ARRAY_SIZE(cleanup_funcs); i++)

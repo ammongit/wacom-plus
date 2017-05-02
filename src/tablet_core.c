@@ -29,7 +29,7 @@ static WacomDeviceDatabase *db;
 static WacomError *err;
 static WacomDevice **list;
 
-int tablet_init(void)
+int tablet_core_init(void)
 {
 	db = libwacom_database_new();
 	err = libwacom_error_new();
@@ -38,12 +38,11 @@ int tablet_init(void)
 	return 0;
 }
 
-void tablet_cleanup(void)
+void tablet_core_cleanup(void)
 {
 	libwacom_database_destroy(db);
 	libwacom_error_free(&err);
 }
-
 
 int tablet_refresh_list(void)
 {

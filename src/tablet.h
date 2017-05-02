@@ -24,6 +24,9 @@
 
 #include "tablet_core.h"
 
+int tablet_obj_init(void);
+void tablet_obj_cleanup(void);
+
 struct tablet_points {
 	unsigned int x1, y1;
 	unsigned int x2, y2;
@@ -125,7 +128,9 @@ enum tablet_parameter {
 	PARAM_TOOL_TYPE,
 	PARAM_TOOL_SERIAL,
 	PARAM_TOOL_ID,
-	PARAM_TABLET_ID
+	PARAM_TABLET_ID,
+
+	NUM_PARAMS
 };
 
 struct tablet {

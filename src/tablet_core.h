@@ -27,8 +27,8 @@
 
 #include "core.h"
 
-int tablet_init(void);
-void tablet_cleanup(void);
+int tablet_core_init(void);
+void tablet_core_cleanup(void);
 
 /*
  * Refreshes the internal list of Wacom devices.
