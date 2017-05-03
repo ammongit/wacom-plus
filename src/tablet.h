@@ -27,20 +27,19 @@
 int tablet_obj_init(void);
 void tablet_obj_cleanup(void);
 
-
 union tablet_argument {
-	struct {
+	struct tablet_points {
 		unsigned int x1, y1;
 		unsigned int x2, y2;
 	} points;
 
-	struct {
+	struct tablet_mapping {
 		const char *num;
 		const char *map;
 		/* TODO? */
 	} mapping;
 
-	enum {
+	enum tablet_mode {
 		MODE_ABSOLUTE,
 		MODE_RELATIVE
 	} mode;
