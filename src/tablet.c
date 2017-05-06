@@ -979,8 +979,8 @@ int tablet_set_parameter(struct tablet *tablet,
 				      PropModeReplace,
 				      data,
 				      nitems);
+		XFlush(tablet->dpy);
 	}
-	XFlush(tablet->dpy);
 	ret = 0;
 end:
 	XFree(data);

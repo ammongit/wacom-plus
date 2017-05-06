@@ -24,6 +24,7 @@
 #include "core.h"
 #include "gui_primary.h"
 
+
 int main(int argc, char *argv[])
 {
 	GtkApplication *app;
