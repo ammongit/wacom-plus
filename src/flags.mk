@@ -20,7 +20,7 @@
 
 include packages.mk
 
-PACKAGES := $(PACKAGES_$(PACKAGE_SET))
+PACKAGES := $(PACKAGES_$(shell tr [a-z] [A-Z] <<< '$(PACKAGE_SET)'))
 
 CC_FLAGS := \
 	-ansi \

@@ -18,25 +18,25 @@
 # along with wacom-plus.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-PACKAGES_gui := \
+PACKAGES_GUI := \
 	gtk+-3.0
 
-PACKAGES_settings := \
+PACKAGES_SETTINGS := \
 	json-c
 
-PACKAGES_wacom := \
+PACKAGES_WACOM := \
 	xorg-wacom \
 	libwacom \
 
-PACKAGES_x11 := \
+PACKAGES_X11 := \
 	x11 \
 	xi \
 	xinerama \
 	xrandr
 
-PACKAGES_all := \
-	$(PACKAGES_gui) \
-	$(PACKAGES_settings) \
-	$(PACKAGES_wacom) \
-	$(PACKAGES_x11)
+PACKAGES_ALL := \
+	$(PACKAGES_GUI) \
+	$(PACKAGES_SETTINGS) \
+	$(PACKAGES_WACOM) \
+	$(PACKAGES_X11)
 
