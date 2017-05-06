@@ -22,7 +22,9 @@ SOURCES     := $(wildcard *.c)
 OBJECTS     := $(SOURCES:.c=.o)
 DEPENDS     := $(SOURCES:.c=.d)
 EXECUTABLE  := wacom-plus
+
 PACKAGE_SET := all
+TARGETS     := $(EXECUTABLE)
 
 include flags.mk rules.mk
 

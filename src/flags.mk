@@ -40,12 +40,12 @@ LD_FLAGS := \
 	$(shell pkg-config --libs $(PACKAGES))
 
 all: FLAGS += -pipe
-all: $(EXECUTABLE)
+all: $(TARGETS)
 
 debug: FLAGS += -pipe -g
-debug: $(EXECUTABLE)
+debug: $(TARGETS)
 
 release: FLAGS += -pipe -DNDEBUG -fstack-protector-strong
-release: $(EXECUTABLE)
+release: $(TARGETS)
 	$(ECHO_STP) $<
 
