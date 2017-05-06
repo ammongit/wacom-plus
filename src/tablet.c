@@ -434,7 +434,7 @@ static const struct param *get_param(const struct tablet *tablet,
 {
 	const struct param *param;
 
-	assert(param_e >= NUM_PARAMS);
+	assert(param_e < NUM_PARAMS);
 
 	param = &parameters[param_e];
 	if (param->prop_name) {
@@ -444,13 +444,13 @@ static const struct param *get_param(const struct tablet *tablet,
 			return NULL;
 		}
 	} else {
-		prop = None;
+		*prop = None;
 	}
 	return param;
 }
 
 static void write_prop(const struct param *param,
-		       unsigned char *data,
+		       void *data,
 		       size_t index,
 		       long val)
 {
@@ -461,18 +461,20 @@ static void write_prop(const struct param *param,
 
 	switch (param->prop_format) {
 	case 8:
-		u.bytes = (char *)data;
+		u.bytes = data;
 		u.bytes[param->prop_offset + index] = val;
 		break;
 	case 32:
-		u.longs = (long *)data;
+		u.longs = data;
 		u.longs[param->prop_offset + index] = val;
 		break;
+	default:
+		assert(0);
 	}
 }
 
 static long read_prop(const struct param *param,
-		      const unsigned char *data,
+		      const void *data,
 		      size_t index)
 {
 	union {
@@ -480,16 +482,19 @@ static long read_prop(const struct param *param,
 		const long *longs;
 	} u;
 
+	assert(data);
+
 	switch (param->prop_format) {
 	case 8:
-		u.bytes = (const char *)data;
+		u.bytes = data;
 		return u.bytes[param->prop_offset + index];
 	case 32:
-		u.longs = (const long *)data;
+		u.longs = data;
 		return u.longs[param->prop_offset + index];
+	default:
+		assert(0);
+		return -1;
 	}
-	assert(0);
-	return -1;
 }
 
 /* Assumes "matrix" is exactly length 9 */
@@ -669,6 +674,53 @@ static int set_output(const struct tablet *tablet,
 	}
 }
 
+static int get_mode(const struct tablet *tablet,
+		    enum tablet_mode *mode)
+{
+	XDeviceInfo *info, *inf;
+	XValuatorInfoPtr xvalu;
+	int ret, ndevices, i;
+
+	info = XListInputDevices(tablet->dpy, &ndevices);
+	if (!info) {
+		last_err_str = "Unable to get list of X input devices";
+		return -1;
+	}
+
+	for (i = 0; i < ndevices; i++) {
+		inf = &info[i];
+		if (inf->id == tablet->dev->device_id)
+			break;
+	}
+	if (i >= ndevices) {
+		last_err_str = "Open X device not found in list";
+		ret = -1;
+		goto end;
+	}
+
+	xvalu = (XValuatorInfoPtr)inf->inputclassinfo;
+	for (i = 0; i < inf->num_classes; i++) {
+		if (xvalu->class == ValuatorClass) {
+			*mode = xvalu->mode;
+			assert(*mode == MODE_ABSOLUTE || *mode == MODE_RELATIVE);
+			break;
+		}
+		xvalu = (XValuatorInfoPtr)((char *)xvalu + xvalu->length);
+	}
+
+	ret = 0;
+end:
+	XFreeDeviceList(info);
+	return ret;
+}
+
+static void set_mode(const struct tablet *tablet,
+		     enum tablet_mode mode)
+{
+	XSetDeviceMode(tablet->dpy, tablet->dev, mode);
+	XFlush(tablet->dpy);
+}
+
 /*-----------*/
 /* EXTERNALS */
 /*-----------*/
@@ -714,7 +766,7 @@ int tablet_set_parameter(struct tablet *tablet,
 	Atom prop, type;
 	unsigned char *data;
 	unsigned long nitems, bytes_after;
-	int ret, format;
+	int ret, format, do_write;
 
 	param = get_param(tablet, param_e, &prop);
 	if (!param) {
@@ -722,31 +774,35 @@ int tablet_set_parameter(struct tablet *tablet,
 		return -1;
 	}
 
-	if (XGetDeviceProperty(tablet->dpy,
-			       tablet->dev,
-			       prop,
-			       0,
-			       X11_DEV_BUFFER_LENGTH,
-			       False,
-			       AnyPropertyType,
-			       &type,
-			       &format,
-			       &nitems,
-			       &bytes_after,
-			       &data)) {
-		last_err_str = "Unable to get device property";
-		ret = -1;
-		goto end;
-	}
-	if (nitems <= param->prop_offset) {
-		last_err_str = "Property offset out of range";
-		ret = -1;
-		goto end;
-	}
-	if (format != param->prop_format || type != XA_INTEGER) {
-		last_err_str = "Property format incorrect";
-		ret = -1;
-		goto end;
+	if (prop != None) {
+		if (XGetDeviceProperty(tablet->dpy,
+				       tablet->dev,
+				       prop,
+				       0,
+				       X11_DEV_BUFFER_LENGTH,
+				       False,
+				       AnyPropertyType,
+				       &type,
+				       &format,
+				       &nitems,
+				       &bytes_after,
+				       &data)) {
+			last_err_str = "Unable to get device property";
+			ret = -1;
+			goto end;
+		}
+		if (nitems <= param->prop_offset) {
+			last_err_str = "Property offset out of range";
+			ret = -1;
+			goto end;
+		}
+		if (format != param->prop_format || type != XA_INTEGER) {
+			last_err_str = "Property format incorrect";
+			ret = -1;
+			goto end;
+		}
+	} else {
+		data = NULL;
 	}
 	if (param->readonly) {
 		last_err_str = "Property is read-only";
@@ -757,6 +813,7 @@ int tablet_set_parameter(struct tablet *tablet,
 	switch (param_e) {
 	case PARAM_TABLET_AREA:
 	case PARAM_PRESSURE_CURVE:
+		do_write = 1;
 		write_prop(param, data, 0, val->points.x1);
 		write_prop(param, data, 1, val->points.y1);
 		write_prop(param, data, 2, val->points.x2);
@@ -773,13 +830,16 @@ int tablet_set_parameter(struct tablet *tablet,
 	case PARAM_STRIP_LEFT_DOWN_MAPPING:
 	case PARAM_STRIP_RIGHT_UP_MAPPING:
 	case PARAM_STRIP_RIGHT_DOWN_MAPPING:
+		do_write = 0;
 		/* TODO set_map() */
 		break;
 	case PARAM_MAP_OUTPUT:
+		do_write = 0;
 		set_output(tablet, val->str);
 		break;
 	case PARAM_MODE:
-		write_prop(param, data, 0, val->mode);
+		do_write = 0;
+		set_mode(tablet, val->mode);
 		break;
 	case PARAM_BIND_TO_SERIAL:
 	case PARAM_RAW_SAMPLE:
@@ -792,6 +852,7 @@ int tablet_set_parameter(struct tablet *tablet,
 	case PARAM_GESTURE_TAP_TIME:
 	case PARAM_GESTURE_ZOOM_DIST:
 	case PARAM_GESTURE_SCROLL_DIST:
+		do_write = 1;
 		write_prop(param, data, 0, val->num);
 		break;
 	case PARAM_HOVER:
@@ -800,28 +861,33 @@ int tablet_set_parameter(struct tablet *tablet,
 	case PARAM_HW_TOUCH_SWITCH_STATE:
 	case PARAM_PRESSURE_RECALIBRATION:
 	case PARAM_GESTURE_ENABLED:
+		do_write = 1;
 		write_prop(param, data, 0, val->boolean);
 		break;
 	case PARAM_TOOL_TYPE:
 	case PARAM_TOOL_SERIAL:
 	case PARAM_TOOL_ID:
 	case PARAM_TABLET_ID:
+		do_write = 1;
 		write_prop(param, data, 0, val->xid);
 		break;
 	case PARAM_RESET_AREA:
 	case NUM_PARAMS:
-		/* do nothing */
+		/* no-op */
+		do_write = 0;
 		break;
 	}
 
-	XChangeDeviceProperty(tablet->dpy,
-			      tablet->dev,
-			      prop,
-			      type,
-			      format,
-			      PropModeReplace,
-			      data,
-			      nitems);
+	if (do_write) {
+		XChangeDeviceProperty(tablet->dpy,
+				      tablet->dev,
+				      prop,
+				      type,
+				      format,
+				      PropModeReplace,
+				      data,
+				      nitems);
+	}
 	XFlush(tablet->dpy);
 	ret = 0;
 end:
@@ -845,26 +911,30 @@ int tablet_get_parameter(const struct tablet *tablet,
 		return -1;
 	}
 
-	if (XGetDeviceProperty(tablet->dpy,
-			       tablet->dev,
-			       prop,
-			       0,
-			       X11_DEV_BUFFER_LENGTH,
-			       False,
-			       AnyPropertyType,
-			       &type,
-			       &format,
-			       &nitems,
-			       &bytes_after,
-			       &data)) {
-		last_err_str = "Unable to get device property";
-		ret = -1;
-		goto end;
-	}
-	if (nitems <= param->prop_offset) {
-		last_err_str = "Property offset out of range";
-		ret = -1;
-		goto end;
+	if (prop != None) {
+		if (XGetDeviceProperty(tablet->dpy,
+				       tablet->dev,
+				       prop,
+				       0,
+				       X11_DEV_BUFFER_LENGTH,
+				       False,
+				       AnyPropertyType,
+				       &type,
+				       &format,
+				       &nitems,
+				       &bytes_after,
+				       &data)) {
+			last_err_str = "Unable to get device property";
+			ret = -1;
+			goto end;
+		}
+		if (nitems <= param->prop_offset) {
+			last_err_str = "Property offset out of range";
+			ret = -1;
+			goto end;
+		}
+	} else {
+		data = NULL;
 	}
 	if (param->writeonly) {
 		last_err_str = "Property is write-only";
@@ -894,7 +964,10 @@ int tablet_get_parameter(const struct tablet *tablet,
 		/* TODO get_map() */
 		break;
 	case PARAM_MODE:
-		val->mode = read_prop(param, data, 0);
+		if (get_mode(tablet, &val->mode)) {
+			ret = -1;
+			goto end;
+		}
 		assert(val->mode == MODE_ABSOLUTE || val->mode == MODE_RELATIVE);
 		break;
 	case PARAM_BIND_TO_SERIAL:

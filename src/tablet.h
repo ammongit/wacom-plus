@@ -40,8 +40,8 @@ union tablet_argument {
 	} mapping;
 
 	enum tablet_mode {
-		MODE_ABSOLUTE,
-		MODE_RELATIVE
+		MODE_ABSOLUTE = Absolute,
+		MODE_RELATIVE = Relative
 	} mode;
 
 	const char *str;
