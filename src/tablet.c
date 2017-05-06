@@ -511,15 +511,8 @@ static int set_matrix_prop(const struct tablet *tablet,
 		return -1;
 	}
 
-	for (i = 0; i < 9; i++) {
-		union {
-			long l;
-			float f;
-		} u;
-
-		u.f = fmatrix[i];
-		matrix[i] = u.l;
-	}
+	for (i = 0; i < 9; i++)
+		matrix[i] = *(const long *)(&fmatrix[i]);
 
 	if (XGetDeviceProperty(tablet->dpy,
 			       tablet->dev,

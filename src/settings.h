@@ -25,28 +25,46 @@
 #include <stdbool.h>
 
 #include "core.h"
+#include "tablet.h"
 
-/*
- * We'll bump this to 1 when we leave the
- * "playing around with serialization" stage
- * and begin the "serious capturing of
- * configuration settings" stage.
- *
- * Until then, the save format is subject to
- * change for any reason at any time.
- */
 #define SETTINGS_SERIAL_VERSION		0
 
 struct settings {
-	enum hand {
-		LEFT,
-		RIGHT
-	} tablet_orientation;
+	struct tablet_points pressure_curve;
+	struct settings_area {
+		enum {
+			AREA_OUTPUT,
+			AREA_POINTS,
+			AREA_DEFAULT
+		} t;
 
-	unsigned int tip_feel;
-	unsigned int double_click_dist;
+		union {
+			const char *output;
+			struct tablet_points points;
+		} u;
+	} area;
 
-	bool force_perceptions;
+	enum tablet_mode mode;
+	int tip_feel;
+	int double_click_dist;
+	int threshold;
+	int bind_to_serial;
+	int raw_sample;
+	int rotation;
+	int suppress;
+	int cursor_prox;
+	int gesture_tap_time;
+	int gesture_zoom_dist;
+	int gesture_scroll_dist;
+	int tablet_debug_level;
+	int tool_debug_level;
+
+	bool force_perceptions  : 1;
+	bool touch              : 1;
+	bool hover              : 1;
+	bool hw_touch_switch_st : 1;
+	bool pressure_recalib   : 1;
+	bool gesture_enabled    : 1;
 };
 
 int read_settings(struct settings *st, const char *path);
