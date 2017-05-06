@@ -114,7 +114,7 @@ static struct param {
 		/* PARAM_ROTATION */
 		"Rotate",
 		WACOM_PROP_ROTATION,
-		0,
+		8,
 		0,
 		False,
 		False,
@@ -728,19 +728,13 @@ static int set_mode(const struct tablet *tablet,
 }
 
 static int get_rotation(const struct tablet *tablet,
-			const struct param *param,
+			Atom prop,
 			enum tablet_rotation *rotation)
 {
-	Atom prop, type;
+	Atom type;
 	unsigned char *data;
 	unsigned long nitems, bytes_after;
 	int format, ret;
-
-	prop = XInternAtom(tablet->dpy, param->prop_name, True);
-	if (!prop || !test_property(tablet, prop)) {
-		last_err_str = "Cannot find tablet property";
-		return -1;
-	}
 
 	if (XGetDeviceProperty(tablet->dpy,
 			       tablet->dev,
@@ -768,19 +762,13 @@ end:
 }
 
 static int set_rotation(const struct tablet *tablet,
-			const struct param *param,
+			Atom prop,
 			enum tablet_rotation rotation)
 {
-	Atom prop, type;
+	Atom type;
 	unsigned char *data;
 	unsigned long nitems, bytes_after;
 	int format, ret;
-
-	prop = XInternAtom(tablet->dpy, param->prop_name, True);
-	if (!prop || !test_property(tablet, prop)) {
-		last_err_str = "Cannot find tablet property";
-		return -1;
-	}
 
 	if (XGetDeviceProperty(tablet->dpy,
 			       tablet->dev,
@@ -941,7 +929,7 @@ int tablet_set_parameter(struct tablet *tablet,
 		break;
 	case PARAM_ROTATION:
 		do_write = 0;
-		if (set_rotation(tablet, param, val->rotation)) {
+		if (set_rotation(tablet, prop, val->rotation)) {
 			ret = -1;
 			goto end;
 		}
@@ -1075,7 +1063,7 @@ int tablet_get_parameter(const struct tablet *tablet,
 		assert(val->mode == MODE_ABSOLUTE || val->mode == MODE_RELATIVE);
 		break;
 	case PARAM_ROTATION:
-		if (get_rotation(tablet, param, &val->rotation)) {
+		if (get_rotation(tablet, prop, &val->rotation)) {
 			ret = -1;
 			goto end;
 		}
