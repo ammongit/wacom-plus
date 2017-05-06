@@ -16,7 +16,7 @@ A Wacom tablet configuration GUI for Linux. There are a few already in existence
 * `libwacom`
 
 ### Compilation
-Invoke `compile.sh release` in `src/`. Yes, a shell script.
+Invoke `make release` in `src/`.
 
 Available under the GPL, version two or later.
 

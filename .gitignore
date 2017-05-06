@@ -1,5 +1,7 @@
 # Artifacts
-src/*.o
+src/*.[oad]
+src/*.so
+src/*.dylib
 src/wacom-plus
 
 # Debugging
