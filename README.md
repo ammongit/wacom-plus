@@ -4,12 +4,13 @@ A Wacom tablet configuration GUI for Linux. There are a few already in existence
 (Insert fancy screenshot here)
 
 ### Requirements
-* Bash
+* GNU Make
 * ANSI C Compiler
 * GTK 3.0
 * X11 headers
 * Xinput
 * Xrandr
+* Xinerama
 * `pkg-config`
 * `json-c`
 * `xf86-input-wacom`

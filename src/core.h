@@ -31,7 +31,7 @@
 #define PROGRAM_NAME				"wacom-plus"
 #define PROGRAM_VERSION_MAJOR			0
 #define PROGRAM_VERSION_MINOR			0
-#define PROGRAM_VERSION_PATCH			2
+#define PROGRAM_VERSION_PATCH			3
 
 #ifndef GIT_HASH
 # define GIT_HASH				"nogithash"
