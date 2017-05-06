@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <xorg/Xwacom.h>
 #include <json.h>
 
 #include "settings.h"
@@ -128,16 +127,16 @@ static const char *make_mode_str(enum tablet_mode mode)
 	}
 }
 
-static const char *make_rotation_str(int rotation)
+static const char *make_rotation_str(enum tablet_rotation rotation)
 {
 	switch (rotation) {
-	case ROTATE_NONE:
+	case ROTATION_NONE:
 		return "none";
-	case ROTATE_CW:
+	case ROTATION_CW:
 		return "clockwise";
-	case ROTATE_CCW:
+	case ROTATION_CCW:
 		return "counter-clockwise";
-	case ROTATE_HALF:
+	case ROTATION_HALF:
 		return "half";
 	default:
 		abort();

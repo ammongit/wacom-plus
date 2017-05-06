@@ -22,6 +22,8 @@
 #ifndef _TABLET_H_
 #define _TABLET_H_
 
+#include <xorg/Xwacom.h>
+
 #include "tablet_core.h"
 
 int tablet_obj_init(void);
@@ -44,6 +46,13 @@ union tablet_argument {
 		MODE_RELATIVE = Relative
 	} mode;
 
+	enum tablet_rotation {
+		ROTATION_NONE = ROTATE_NONE,
+		ROTATION_CW = ROTATE_CW,
+		ROTATION_CCW = ROTATE_CCW,
+		ROTATION_HALF = ROTATE_HALF
+	} rotation;
+
 	const char *str;
 	long num;
 	Bool boolean;
@@ -62,7 +71,7 @@ enum tablet_parameter {
 	PARAM_MODE,			/* mode */
 	PARAM_PRESSURE_CURVE,		/* points */
 	PARAM_RAW_SAMPLE,		/* num */
-	PARAM_ROTATION,			/* num */
+	PARAM_ROTATION,			/* rotation */
 	PARAM_SUPPRESS,			/* num */
 	PARAM_TABLET_DEBUG_LEVEL,	/* num */
 	PARAM_HOVER,			/* boolean */

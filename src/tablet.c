@@ -386,6 +386,9 @@ static struct param {
 /* UTILITIES */
 /*-----------*/
 
+#if defined(NDEBUG)
+# define test_property(tablet, prop)	1
+#else
 static Bool test_property(const struct tablet *tablet, Atom prop)
 {
 	Atom *properties;
@@ -410,6 +413,7 @@ static Bool test_property(const struct tablet *tablet, Atom prop)
 	XFree(properties);
 	return found;
 }
+#endif /* NDEBUG */
 
 static Bool need_xinerama(Display *dpy)
 {
@@ -714,11 +718,102 @@ end:
 	return ret;
 }
 
-static void set_mode(const struct tablet *tablet,
-		     enum tablet_mode mode)
+static int set_mode(const struct tablet *tablet,
+		    enum tablet_mode mode)
 {
-	XSetDeviceMode(tablet->dpy, tablet->dev, mode);
+	if (XSetDeviceMode(tablet->dpy, tablet->dev, mode))
+		return -1;
 	XFlush(tablet->dpy);
+	return 0;
+}
+
+static int get_rotation(const struct tablet *tablet,
+			const struct param *param,
+			enum tablet_rotation *rotation)
+{
+	Atom prop, type;
+	unsigned char *data;
+	unsigned long nitems, bytes_after;
+	int format, ret;
+
+	prop = XInternAtom(tablet->dpy, param->prop_name, True);
+	if (!prop || !test_property(tablet, prop)) {
+		last_err_str = "Cannot find tablet property";
+		return -1;
+	}
+
+	if (XGetDeviceProperty(tablet->dpy,
+			       tablet->dev,
+			       prop,
+			       0,
+			       X11_DEV_BUFFER_LENGTH,
+			       False,
+			       AnyPropertyType,
+			       &type,
+			       &format,
+			       &nitems,
+			       &bytes_after,
+			       &data)) {
+		last_err_str = "Unable to get device property";
+		ret = -1;
+		goto end;
+	}
+	assert(nitems > 0 && format == 8);
+	*rotation = *data;
+
+	ret = 0;
+end:
+	XFree(data);
+	return ret;
+}
+
+static int set_rotation(const struct tablet *tablet,
+			const struct param *param,
+			enum tablet_rotation rotation)
+{
+	Atom prop, type;
+	unsigned char *data;
+	unsigned long nitems, bytes_after;
+	int format, ret;
+
+	prop = XInternAtom(tablet->dpy, param->prop_name, True);
+	if (!prop || !test_property(tablet, prop)) {
+		last_err_str = "Cannot find tablet property";
+		return -1;
+	}
+
+	if (XGetDeviceProperty(tablet->dpy,
+			       tablet->dev,
+			       prop,
+			       0,
+			       X11_DEV_BUFFER_LENGTH,
+			       False,
+			       AnyPropertyType,
+			       &type,
+			       &format,
+			       &nitems,
+			       &bytes_after,
+			       &data)) {
+		last_err_str = "Unable to get device property";
+		ret = -1;
+		goto end;
+	}
+	assert(nitems > 0 && format == 8);
+	*data = rotation;
+	XChangeDeviceProperty(tablet->dpy,
+			      tablet->dev,
+			      prop,
+			      type,
+			      format,
+			      PropModeReplace,
+			      data,
+			      nitems);
+	XFlush(tablet->dpy);
+
+	ret = 0;
+end:
+	XFree(data);
+	return ret;
 }
 
 /*-----------*/
@@ -839,11 +934,20 @@ int tablet_set_parameter(struct tablet *tablet,
 		break;
 	case PARAM_MODE:
 		do_write = 0;
-		set_mode(tablet, val->mode);
+		if (set_mode(tablet, val->mode)) {
+			ret = -1;
+			goto end;
+		}
+		break;
+	case PARAM_ROTATION:
+		do_write = 0;
+		if (set_rotation(tablet, param, val->rotation)) {
+			ret = -1;
+			goto end;
+		}
 		break;
 	case PARAM_BIND_TO_SERIAL:
 	case PARAM_RAW_SAMPLE:
-	case PARAM_ROTATION:
 	case PARAM_SUPPRESS:
 	case PARAM_TABLET_DEBUG_LEVEL:
 	case PARAM_CURSOR_PROXIMITY:
@@ -970,9 +1074,14 @@ int tablet_get_parameter(const struct tablet *tablet,
 		}
 		assert(val->mode == MODE_ABSOLUTE || val->mode == MODE_RELATIVE);
 		break;
+	case PARAM_ROTATION:
+		if (get_rotation(tablet, param, &val->rotation)) {
+			ret = -1;
+			goto end;
+		}
+		break;
 	case PARAM_BIND_TO_SERIAL:
 	case PARAM_RAW_SAMPLE:
-	case PARAM_ROTATION:
 	case PARAM_SUPPRESS:
 	case PARAM_TABLET_DEBUG_LEVEL:
 	case PARAM_CURSOR_PROXIMITY:
