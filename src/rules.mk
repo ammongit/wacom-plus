@@ -35,6 +35,9 @@ $(SHARED_LIB): $(OBJECTS)
 %.o: %.c
 	$(ECHO_CC) $(FLAGS) $(CFLAGS) $(CC_FLAGS) -c -o $@ $<
 
+%.pic.o: %.c
+	$(ECHO_CC) $(FLAGS) $(CFLAGS) $(CC_FLAGS) -fpic -c -o $@ $<
+
 %.d: %.c
 	$(ECHO_DEP) $(FLAGS) $(CFLAGS) $(CC_FLAGS) -MM $< > $@
 

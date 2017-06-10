@@ -11,10 +11,10 @@ A Wacom tablet configuration GUI for Linux. There are a few already in existence
 * Xinput
 * Xrandr
 * Xinerama
-* `pkg-config`
-* `json-c`
-* `xf86-input-wacom`
-* `libwacom`
+* pkg-config
+* json-c
+* xf86-input-wacom
+* libwacom
 
 ### Compilation
 Invoke `make release` in `src/`.

@@ -678,6 +678,57 @@ static int set_output(const struct tablet *tablet,
 	}
 }
 
+static int get_map(const struct tablet *tablet,
+		   const struct param *param,
+		   struct tablet_mapping *mapping)
+{
+}
+
+static int set_map(const struct tablet *tablet,
+		   const struct param *param,
+		   Atom prop,
+		   const struct tablet_mapping *mapping)
+{
+	unsigned long bytes_after;
+	unsigned long _data[256] = {0};
+	struct {
+		unsigned long *data;
+		unsigned long nitems;
+	} new, btn;
+	Atom type;
+	int ret, format;
+
+	if (XGetDeviceProperty(tablet->dpy,
+			       tablet->dev,
+			       prop,
+			       0,
+			       sizeof(_data),
+			       False,
+			       AnyPropertyType,
+			       &type,
+			       &format,
+			       &btn.nitems,
+			       &bytes_after,
+			       (unsigned char **)(&btn.data))) {
+		last_err_str = "Unable to retrieve device property";
+		return -1;
+	}
+	if (param->prop_offset >= btn.nitems) {
+		last_err_str = "Invalid offset in property field";
+		ret = -1;
+		goto end;
+	}
+	assert(format == 32);
+	assert(type == XA_ATOM);
+
+	// xsetwacom.c:1441
+
+	ret = 0;
+end:
+	XFree(btn_data);
+	return ret;
+}
+
 static int get_mode(const struct tablet *tablet,
 		    enum tablet_mode *mode)
 {
@@ -914,11 +965,17 @@ int tablet_set_parameter(struct tablet *tablet,
 	case PARAM_STRIP_RIGHT_UP_MAPPING:
 	case PARAM_STRIP_RIGHT_DOWN_MAPPING:
 		do_write = 0;
-		/* TODO set_map() */
+		if (set_map(tablet, &val->mapping)) {
+			ret = -1;
+			goto end;
+		}
 		break;
 	case PARAM_MAP_OUTPUT:
 		do_write = 0;
-		set_output(tablet, val->str);
+		if (set_output(tablet, val->str)) {
+			ret = -1;
+			goto end;
+		}
 		break;
 	case PARAM_MODE:
 		do_write = 0;
