@@ -39,7 +39,7 @@ pkg_check_modules(LIBWACOM REQUIRED libwacom)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GTK_CFLAGS} ${LIBWACOM_CFLAGS}")
 
 # Set compile flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ansi -pedantic")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pedantic")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wshadow -Wextra -Wmissing-prototypes -Wcast-qual")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pipe -O2")
 add_definitions("-D_XOPEN_SOURCE=500")
@@ -52,4 +52,7 @@ set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fstack-protector-strong -We
 add_executable(${PROJECT_NAME} ${SOURCES})
 target_link_libraries(${PROJECT_NAME} ${GTK_LDFLAGS})
 target_link_libraries(${PROJECT_NAME} ${LIBWACOM_LDFLAGS})
+
+set_property(TARGET "${PROJECT_NAME}" PROPERTY C_STANDARD 89)
+set(CMAKE_C_STANDARD_REQUIRED ON)
 
